@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-print-defaults>
+@media print {
+  @page { margin: 0; }
+  body { padding: 0.5in; box-sizing: border-box; }
+  h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+  figure, table, pre, blockquote, img, svg, tr, [class~="card" i] { break-inside: avoid; }
+  img, svg { max-width: 100%; }
+  p { orphans: 3; widows: 3; }
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#0a0a0a">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0a0a0a"/>
+    <text x="600" y="360" text-anchor="middle" font-family="'Geist Mono',monospace" font-size="120" font-weight="700" fill="#2e9df1" letter-spacing="-4">Predict</text>
+    <text x="600" y="470" text-anchor="middle" font-family="'Geist Mono',monospace" font-size="76" font-weight="700" fill="#e8e8ec" letter-spacing="-2">sim</text>
+    <polyline points="360,600 470,560 560,600 650,540 760,580 840,520" fill="none" stroke="#2e9df1" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+</template>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#0a0a0a;}
+  ::selection{background:#2e9df1;color:#fff;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#26262b;border-radius:6px;border:2px solid #0a0a0a;}
+  @keyframes dotpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.8);}}
+  @keyframes livedot{0%{box-shadow:0 0 0 0 rgba(62,207,142,.55);}70%{box-shadow:0 0 0 6px rgba(62,207,142,0);}100%{box-shadow:0 0 0 0 rgba(62,207,142,0);}}
+  @keyframes glow{0%,100%{opacity:.5;}50%{opacity:1;}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0a0a0a;color:#fafafa;font-family:'Lato',-apple-system,system-ui,sans-serif;padding-bottom:56px;">
+
+  <header style="position:sticky;top:0;z-index:30;background:rgba(10,10,10,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid #1f1f23;">
+    <div style="max-width:1360px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:11px;">
+          <img src="assets/predict-logo.png" alt="PredictSim" style="height:26px;width:auto;display:block;"/>
+          <span style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.12em;color:#52525b;text-transform:uppercase;">S3 Labs</span>
+        </div>
+        <span style="width:1px;height:20px;background:#26262b;margin:0 2px;"></span>
+        <span style="font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.08em;color:#a1a1aa;padding:3px 8px;border:1px solid #232327;border-radius:6px;">FORWARD-TEST · LIVE PROD ODDS</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:{{ dotColor }};animation:livedot 2s ease-out infinite;"></span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.08em;color:#cfcfd4;">{{ runLabel }}</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#52525b;">·</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#a1a1aa;font-variant-numeric:tabular-nums;">{{ clockStr }} ET</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#52525b;font-variant-numeric:tabular-nums;">tick {{ tickStr }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button onClick="{{ toggleRun }}" style="{{ runBtnStyle }}">{{ runBtnLabel }}</button>
+          <div style="display:flex;gap:4px;">
+            <button onClick="{{ speed1 }}" style="{{ s1Style }}">1×</button>
+            <button onClick="{{ speed4 }}" style="{{ s4Style }}">4×</button>
+            <button onClick="{{ speed16 }}" style="{{ s16Style }}">16×</button>
+          </div>
+          <button onClick="{{ reset }}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;font-size:11px;font-family:'Geist Mono',monospace;letter-spacing:.04em;border:1px solid #2e2e33;background:transparent;color:#a1a1aa;border-radius:6px;cursor:pointer;">RESET</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width:1360px;margin:0 auto;padding:20px 24px 0;">
+
+    <!-- ASSUMPTIONS RIBBON -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;background:#0e0e10;border:1px solid #1f1f23;border-radius:12px;padding:13px 18px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+        <span style="display:inline-flex;align-items:center;gap:7px;background:rgba(46,157,241,.13);border:1px solid rgba(46,157,241,.3);color:#7fc2f4;font-family:'Geist Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:7px;white-space:nowrap;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#2e9df1;animation:glow 2.6s ease-in-out infinite;"></span>FAKE MONEY · REAL ODDS
+        </span>
+        <span style="font-size:13px;color:#8a8a93;line-height:1.4;">Virtual wallet matched against Kalshi production books over public, no-auth endpoints. No capital at risk.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+        <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;letter-spacing:.04em;padding:4px 9px;border:1px solid #232327;border-radius:6px;">maker fill · <span style="color:#c8c8cf;">{{ fillChip }}</span></span>
+        <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;letter-spacing:.04em;padding:4px 9px;border:1px solid #232327;border-radius:6px;">slippage · <span style="color:#c8c8cf;">3¢</span></span>
+        <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;letter-spacing:.04em;padding:4px 9px;border:1px solid #232327;border-radius:6px;">latency · <span style="color:#c8c8cf;">500ms</span></span>
+        <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;letter-spacing:.04em;padding:4px 9px;border:1px solid #232327;border-radius:6px;display:inline-flex;gap:6px;align-items:center;">mark <button onClick="{{ mtmBid }}" style="{{ bidStyle }}">bid</button><button onClick="{{ mtmMid }}" style="{{ midStyle }}">mid</button></span>
+        <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;letter-spacing:.04em;padding:4px 9px;border:1px solid #232327;border-radius:6px;display:inline-flex;gap:6px;align-items:center;">queue <button onClick="{{ fill1 }}" style="{{ f1Style }}">L1</button><button onClick="{{ fill2 }}" style="{{ f2Style }}">L2</button><button onClick="{{ fill0 }}" style="{{ f0Style }}">L0</button></span>
+      </div>
+    </div>
+
+    <!-- WALLET STRIP -->
+    <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr 0.9fr;gap:1px;background:#1c1c20;border:1px solid #1f1f23;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:#0e0e10;padding:16px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:#52525b;text-transform:uppercase;margin-bottom:8px;">Equity</div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <span style="font-family:'Geist Mono',monospace;font-weight:600;font-size:30px;letter-spacing:-0.01em;color:#fafafa;font-variant-numeric:tabular-nums;">{{ equityStr }}</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:{{ pnlColor }};font-variant-numeric:tabular-nums;">{{ pnlStr }}</span>
+        </div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;margin-top:5px;">from {{ startStr }} start · {{ deltaStr }}</div>
+      </div>
+      <div style="background:#0e0e10;padding:16px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:#52525b;text-transform:uppercase;margin-bottom:8px;">Cash free</div>
+        <div style="font-family:'Geist Mono',monospace;font-weight:500;font-size:21px;color:#e8e8ec;font-variant-numeric:tabular-nums;">{{ cashStr }}</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;margin-top:7px;">{{ reservedStr }} reserved</div>
+      </div>
+      <div style="background:#0e0e10;padding:16px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:#52525b;text-transform:uppercase;margin-bottom:8px;">Unrealized</div>
+        <div style="font-family:'Geist Mono',monospace;font-weight:500;font-size:21px;color:{{ unrealColor }};font-variant-numeric:tabular-nums;">{{ unrealStr }}</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;margin-top:7px;">{{ posCountStr }} open · mark {{ mtmLabel }}</div>
+      </div>
+      <div style="background:#0e0e10;padding:16px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:#52525b;text-transform:uppercase;margin-bottom:8px;">Realized</div>
+        <div style="font-family:'Geist Mono',monospace;font-weight:500;font-size:21px;color:{{ realColor }};font-variant-numeric:tabular-nums;">{{ realStr }}</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;margin-top:7px;">net of fees</div>
+      </div>
+      <div style="background:#0e0e10;padding:16px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:#52525b;text-transform:uppercase;margin-bottom:8px;">Fees paid</div>
+        <div style="font-family:'Geist Mono',monospace;font-weight:500;font-size:21px;color:#e8e8ec;font-variant-numeric:tabular-nums;">{{ feesStr }}</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;margin-top:7px;">maker-free on 2 of 3</div>
+      </div>
+      <div style="background:#0e0e10;padding:16px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:#52525b;text-transform:uppercase;margin-bottom:8px;">Max DD</div>
+        <div style="font-family:'Geist Mono',monospace;font-weight:500;font-size:21px;color:#e8e8ec;font-variant-numeric:tabular-nums;">{{ ddStr }}</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;margin-top:7px;">on equity</div>
+      </div>
+    </div>
+
+    <!-- EQUITY CURVE -->
+    <div style="background:#0e0e10;border:1px solid #1f1f23;border-radius:14px;padding:18px 20px 12px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <span style="font-weight:700;font-size:14px;letter-spacing:-0.005em;color:#e8e8ec;">Equity curve</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#52525b;">mark-to-market · {{ mtmLabel }} · {{ tickStr }} ticks</span>
+        </div>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:{{ pnlColor }};font-weight:500;">{{ deltaStr }}</span>
+      </div>
+      <div style="position:relative;width:100%;height:208px;">
+        <svg viewBox="0 0 1000 208" preserveAspectRatio="none" style="width:100%;height:208px;display:block;overflow:visible;">
+          <defs>
+            <linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2e9df1" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#2e9df1" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="{{ baselineY }}" x2="1000" y2="{{ baselineY }}" stroke="#2e2e33" stroke-width="1" stroke-dasharray="3 4"/>
+          <path d="{{ equityArea }}" fill="url(#eqfill)"/>
+          <path d="{{ equityPath }}" fill="none" stroke="#2e9df1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="{{ dotX }}" cy="{{ dotY }}" r="3.5" fill="#2e9df1" style="animation:dotpulse 2s ease-in-out infinite;"/>
+        </svg>
+        <span style="position:absolute;top:0;right:2px;font-family:'Geist Mono',monospace;font-size:10px;color:#52525b;">{{ hiLabel }}</span>
+        <span style="position:absolute;bottom:18px;right:2px;font-family:'Geist Mono',monospace;font-size:10px;color:#52525b;">{{ loLabel }}</span>
+        <span style="position:absolute;font-family:'Geist Mono',monospace;font-size:10px;color:#6b6b73;left:2px;top:{{ baseLabelTop }};">{{ startStr }}</span>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div style="display:grid;grid-template-columns:minmax(0,1.42fr) minmax(0,1fr);gap:16px;align-items:start;">
+
+      <!-- LEFT: MARKET TAPE -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- WEATHER -->
+        <div style="background:#0e0e10;border:1px solid #1f1f23;border-radius:14px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid #1a1a1e;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="width:8px;height:8px;border-radius:2px;background:#E0A33E;"></span>
+              <span style="font-weight:700;font-size:14px;color:#e8e8ec;">Weather — NYC daily high</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;">KXHIGHNY-26JUN20</span>
+            </div>
+            <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#3e8e63;background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.22);padding:3px 8px;border-radius:5px;letter-spacing:.05em;">MAKER-FREE · quadratic</span>
+          </div>
+          <div style="display:flex;align-items:center;padding:7px 16px;font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:#52525b;text-transform:uppercase;border-bottom:1px solid #161619;">
+            <span style="flex:1;min-width:0;padding-right:10px;">Bucket</span>
+            <span style="width:96px;text-align:center;">model vs mkt</span>
+            <span style="width:46px;text-align:right;">model</span>
+            <span style="width:46px;text-align:right;">mkt</span>
+            <span style="width:52px;text-align:right;">edge</span>
+            <span style="width:62px;text-align:right;">bid·ask</span>
+            <span style="width:74px;text-align:right;">position</span>
+            <span style="width:64px;text-align:center;">signal</span>
+          </div>
+          <sc-for list="{{ weatherRows }}" as="r" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;padding:10px 16px;border-top:1px solid #161619;">
+              <div style="flex:1;min-width:0;padding-right:10px;">
+                <div style="font-size:13px;font-weight:700;color:#e2e2e6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.sub }}</div>
+                <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#52525b;margin-top:2px;">{{ r.meta }}</div>
+              </div>
+              <div style="width:96px;padding:0 8px;">
+                <div style="position:relative;height:6px;background:#1c1c20;border-radius:3px;">
+                  <div style="position:absolute;top:0;height:6px;border-radius:3px;background:{{ r.gapColor }};opacity:.5;left:{{ r.gapLeft }}%;width:{{ r.gapWidth }}%;"></div>
+                  <div style="position:absolute;top:-2px;width:2px;height:10px;border-radius:2px;background:#71717a;left:{{ r.barMkt }}%;"></div>
+                  <div style="position:absolute;top:-2px;width:2px;height:10px;border-radius:2px;background:#2e9df1;left:{{ r.barModel }}%;"></div>
+                </div>
+              </div>
+              <span style="width:46px;text-align:right;font-family:'Geist Mono',monospace;font-size:12px;color:#7fc2f4;font-variant-numeric:tabular-nums;">{{ r.modelStr }}</span>
+              <span style="width:46px;text-align:right;font-family:'Geist Mono',monospace;font-size:12px;color:#c8c8cf;font-variant-numeric:tabular-nums;">{{ r.mktStr }}</span>
+              <span style="width:52px;text-align:right;font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;color:{{ r.edgeColor }};font-variant-numeric:tabular-nums;">{{ r.edgeStr }}</span>
+              <span style="width:62px;text-align:right;font-family:'Geist Mono',monospace;font-size:11.5px;color:#8a8a93;font-variant-numeric:tabular-nums;">{{ r.bookStr }}</span>
+              <span style="width:74px;text-align:right;font-family:'Geist Mono',monospace;font-size:11px;color:{{ r.posColor }};font-variant-numeric:tabular-nums;">{{ r.posStr }}</span>
+              <span style="width:64px;display:flex;justify-content:center;">
+                <span style="font-family:'Geist Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.06em;padding:3px 7px;border-radius:5px;color:{{ r.sigColor }};background:{{ r.sigBg }};">{{ r.sig }}</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- MACRO -->
+        <div style="background:#0e0e10;border:1px solid #1f1f23;border-radius:14px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid #1a1a1e;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="width:8px;height:8px;border-radius:2px;background:#2e9df1;"></span>
+              <span style="font-weight:700;font-size:14px;color:#e8e8ec;">Macro — claims &amp; core CPI</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;">2 events</span>
+            </div>
+            <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#b58a3e;background:rgba(224,163,62,.1);border:1px solid rgba(224,163,62,.22);padding:3px 8px;border-radius:5px;letter-spacing:.05em;">CPI CHARGES MAKER FEES</span>
+          </div>
+          <div style="display:flex;align-items:center;padding:7px 16px;font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:#52525b;text-transform:uppercase;border-bottom:1px solid #161619;">
+            <span style="flex:1;min-width:0;padding-right:10px;">Bucket</span>
+            <span style="width:96px;text-align:center;">model vs mkt</span>
+            <span style="width:46px;text-align:right;">model</span>
+            <span style="width:46px;text-align:right;">mkt</span>
+            <span style="width:52px;text-align:right;">edge</span>
+            <span style="width:62px;text-align:right;">bid·ask</span>
+            <span style="width:74px;text-align:right;">position</span>
+            <span style="width:64px;text-align:center;">signal</span>
+          </div>
+          <sc-for list="{{ macroRows }}" as="r" hint-placeholder-count="7">
+            <div style="display:flex;align-items:center;padding:10px 16px;border-top:1px solid #161619;">
+              <div style="flex:1;min-width:0;padding-right:10px;">
+                <div style="font-size:13px;font-weight:700;color:#e2e2e6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.sub }}</div>
+                <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#52525b;margin-top:2px;">{{ r.meta }}</div>
+              </div>
+              <div style="width:96px;padding:0 8px;">
+                <div style="position:relative;height:6px;background:#1c1c20;border-radius:3px;">
+                  <div style="position:absolute;top:0;height:6px;border-radius:3px;background:{{ r.gapColor }};opacity:.5;left:{{ r.gapLeft }}%;width:{{ r.gapWidth }}%;"></div>
+                  <div style="position:absolute;top:-2px;width:2px;height:10px;border-radius:2px;background:#71717a;left:{{ r.barMkt }}%;"></div>
+                  <div style="position:absolute;top:-2px;width:2px;height:10px;border-radius:2px;background:#2e9df1;left:{{ r.barModel }}%;"></div>
+                </div>
+              </div>
+              <span style="width:46px;text-align:right;font-family:'Geist Mono',monospace;font-size:12px;color:#7fc2f4;font-variant-numeric:tabular-nums;">{{ r.modelStr }}</span>
+              <span style="width:46px;text-align:right;font-family:'Geist Mono',monospace;font-size:12px;color:#c8c8cf;font-variant-numeric:tabular-nums;">{{ r.mktStr }}</span>
+              <span style="width:52px;text-align:right;font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;color:{{ r.edgeColor }};font-variant-numeric:tabular-nums;">{{ r.edgeStr }}</span>
+              <span style="width:62px;text-align:right;font-family:'Geist Mono',monospace;font-size:11.5px;color:#8a8a93;font-variant-numeric:tabular-nums;">{{ r.bookStr }}</span>
+              <span style="width:74px;text-align:right;font-family:'Geist Mono',monospace;font-size:11px;color:{{ r.posColor }};font-variant-numeric:tabular-nums;">{{ r.posStr }}</span>
+              <span style="width:64px;display:flex;justify-content:center;">
+                <span style="font-family:'Geist Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.06em;padding:3px 7px;border-radius:5px;color:{{ r.sigColor }};background:{{ r.sigBg }};">{{ r.sig }}</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- RIGHT: SCORECARD + FILLS -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- SCORECARD -->
+        <div style="background:#0e0e10;border:1px solid #1f1f23;border-radius:14px;overflow:hidden;">
+          <div style="padding:14px 18px 12px;border-bottom:1px solid #1a1a1e;">
+            <div style="font-weight:700;font-size:14px;color:#e8e8ec;">Head-to-head scorecard</div>
+            <div style="font-size:12px;color:#6b6b73;margin-top:3px;">The Phase-2 decision input — which edge is real, calibrated, and fee-positive.</div>
+          </div>
+          <div style="display:flex;align-items:center;padding:9px 18px;border-bottom:1px solid #161619;">
+            <span style="flex:1;font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:#52525b;text-transform:uppercase;">Metric</span>
+            <span style="width:96px;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:6px;"><span style="width:7px;height:7px;border-radius:2px;background:#E0A33E;"></span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#cfcfd4;font-weight:600;">Weather</span></span>
+            <span style="width:96px;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:6px;"><span style="width:7px;height:7px;border-radius:2px;background:#2e9df1;"></span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#cfcfd4;font-weight:600;">Macro</span></span>
+          </div>
+          <sc-for list="{{ scoreRows }}" as="m" hint-placeholder-count="7">
+            <div style="display:flex;align-items:center;padding:11px 18px;border-top:1px solid #161619;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;color:#d4d4d9;font-weight:400;">{{ m.label }}</div>
+                <div style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#52525b;margin-top:1px;">{{ m.hint }}</div>
+              </div>
+              <span style="width:96px;text-align:right;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:{{ m.wColor }};font-variant-numeric:tabular-nums;">{{ m.wVal }}</span>
+              <span style="width:96px;text-align:right;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:{{ m.mColor }};font-variant-numeric:tabular-nums;">{{ m.mVal }}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:11px;padding:13px 18px;background:rgba(224,163,62,.05);border-top:1px solid #1f1f23;">
+            <span style="font-family:'Geist Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.08em;color:#0a0a0a;background:#E0A33E;padding:4px 9px;border-radius:5px;">{{ leaderTag }}</span>
+            <span style="font-size:12.5px;color:#b8b8c0;line-height:1.45;">{{ leaderBlurb }}</span>
+          </div>
+        </div>
+
+        <!-- FILLS FEED -->
+        <div style="background:#0e0e10;border:1px solid #1f1f23;border-radius:14px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid #1a1a1e;">
+            <div style="font-weight:700;font-size:14px;color:#e8e8ec;">Fill &amp; settlement tape</div>
+            <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#52525b;">trade-through · queue-modeled</span>
+          </div>
+          <div style="max-height:336px;overflow:hidden;">
+            <sc-for list="{{ fillRows }}" as="f" hint-placeholder-count="8">
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 18px;border-top:1px solid #161619;background:{{ f.bg }};">
+                <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#52525b;width:42px;font-variant-numeric:tabular-nums;">{{ f.time }}</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;color:{{ f.liqColor }};background:{{ f.liqBg }};padding:2px 6px;border-radius:4px;width:60px;text-align:center;">{{ f.liq }}</span>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:12px;color:#d4d4d9;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ f.title }}</div>
+                  <div style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#52525b;margin-top:1px;">{{ f.detail }}</div>
+                </div>
+                <span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:500;color:{{ f.noteColor }};font-variant-numeric:tabular-nums;white-space:nowrap;">{{ f.note }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:14px;border-top:1px solid #18181b;">
+      <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#3f3f46;">paper-sim run --strategy weather,macro --cash {{ cashFlag }} --fill {{ fillChip }}</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#3f3f46;">artifacts → runs/{{ runId }}/ · report.html</span>
+    </div>
+    <div style="display:flex;justify-content:center;margin-top:36px;">
+      <img src="assets/predict-logo.png" alt="PredictSim" style="height:65px;width:auto;display:block;opacity:0.9;"/>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1180},&quot;startingCash&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:50,&quot;min&quot;:10,&quot;max&quot;:1000,&quot;step&quot;:10,&quot;tsType&quot;:&quot;number&quot;},&quot;makerFillModel&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;level1&quot;,&quot;options&quot;:[&quot;level0&quot;,&quot;level1&quot;,&quot;level2&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;markToMarket&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;bid&quot;,&quot;options&quot;:[&quot;bid&quot;,&quot;mid&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  startCents = (this.props.startingCash ?? 50) * 100;
+
+  state = {
+    running: true,
+    speed: 4,
+    fillModel: this.props.makerFillModel ?? "level1",
+    mtm: this.props.markToMarket ?? "bid",
+    tick: 142,
+    simMs: Date.UTC(2026, 5, 20, 13, 35, 0),
+    wallet: { cash: this.startCents + 313, reserved: 0, fees: 11 },
+    positions: {},
+    orders: [],
+    fills: this.seedFills(),
+    markets: this.buildMarkets(),
+    equity: this.seedEquity(),
+    score: this.seedScore(),
+    nextId: 1,
+  };
+
+  clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+  tail(t) { return t.split("-").pop(); }
+  catKey(c) { return c === "weather" ? "weather" : "macro"; }
+  evShort(t) { if (t.indexOf("KXHIGH") === 0) return "NYC"; if (t.indexOf("KXJOBLESS") === 0) return "CLAIMS"; return "CPI"; }
+  evLong(t) { if (t.indexOf("KXHIGH") === 0) return "NYC HIGH"; if (t.indexOf("KXJOBLESS") === 0) return "JOBLESS"; return "CORE CPI"; }
+
+  buildMarkets() {
+    const mk = (o) => ({ flash: 0, bid: Math.round(o.mid - o.spread / 2), ask: Math.round(o.mid + o.spread / 2), ...o });
+    return [
+      mk({ ticker: "KXHIGHNY-26JUN20-T77", sub: "77° or below", cat: "weather", feeFree: true, model: 0.05, fair: 0.05, mid: 7, spread: 3, depth: 8 }),
+      mk({ ticker: "KXHIGHNY-26JUN20-B79", sub: "78° to 79°", cat: "weather", feeFree: true, model: 0.12, fair: 0.13, mid: 14, spread: 3, depth: 7 }),
+      mk({ ticker: "KXHIGHNY-26JUN20-B81", sub: "80° to 81°", cat: "weather", feeFree: true, model: 0.46, fair: 0.47, mid: 40, spread: 3, depth: 11 }),
+      mk({ ticker: "KXHIGHNY-26JUN20-B83", sub: "82° to 83°", cat: "weather", feeFree: true, model: 0.30, fair: 0.29, mid: 27, spread: 3, depth: 9 }),
+      mk({ ticker: "KXHIGHNY-26JUN20-T83", sub: "84° or above", cat: "weather", feeFree: true, model: 0.08, fair: 0.07, mid: 13, spread: 4, depth: 6 }),
+      mk({ ticker: "KXJOBLESS-26JUN25-T220", sub: "Below 220k", cat: "macro", feeFree: true, model: 0.22, fair: 0.21, mid: 19, spread: 3, depth: 7 }),
+      mk({ ticker: "KXJOBLESS-26JUN25-B230", sub: "220k to 230k", cat: "macro", feeFree: true, model: 0.42, fair: 0.43, mid: 36, spread: 3, depth: 10 }),
+      mk({ ticker: "KXJOBLESS-26JUN25-B240", sub: "230k to 240k", cat: "macro", feeFree: true, model: 0.27, fair: 0.27, mid: 28, spread: 3, depth: 8 }),
+      mk({ ticker: "KXJOBLESS-26JUN25-T240", sub: "Above 240k", cat: "macro", feeFree: true, model: 0.10, fair: 0.09, mid: 14, spread: 3, depth: 6 }),
+      mk({ ticker: "KXCPICORE-26JUL11-B025", sub: "0.2% m/m", cat: "macro", feeFree: false, model: 0.38, fair: 0.39, mid: 33, spread: 4, depth: 9 }),
+      mk({ ticker: "KXCPICORE-26JUL11-B035", sub: "0.3% m/m", cat: "macro", feeFree: false, model: 0.44, fair: 0.44, mid: 45, spread: 4, depth: 10 }),
+      mk({ ticker: "KXCPICORE-26JUL11-T035", sub: "0.4% or more", cat: "macro", feeFree: false, model: 0.18, fair: 0.17, mid: 20, spread: 4, depth: 7 }),
+    ];
+  }
+
+  seedEquity() {
+    const base = this.startCents, out = [], n = 34;
+    for (let i = 0; i < n; i++) out.push(Math.round(base + (i / (n - 1)) * 300 + (Math.random() - 0.5) * 16));
+    out[n - 1] = base + 313;
+    return out;
+  }
+
+  seedScore() {
+    return {
+      weather: { trades: 9, makerFills: 9, takerFills: 0, sumEdge: 0.62, realizedNet: 235, brierSum: 0.61, brierN: 6, maxDD: 0.028, fees: 0 },
+      macro: { trades: 6, makerFills: 4, takerFills: 2, sumEdge: 0.30, realizedNet: 78, brierSum: 0.97, brierN: 5, maxDD: 0.052, fees: 11 },
+    };
+  }
+
+  seedFills() {
+    const t = Date.UTC(2026, 5, 20, 13, 35, 0);
+    return [
+      { t: t - 240000, tail: "B81", ev: "NYC", title: "NYC HIGH · 80° to 81°", liq: "MAKER", kind: "maker", side: "YES", qty: 2, price: 39, note: "queue 0", fresh: 0 },
+      { t: t - 600000, tail: "B230", ev: "CLAIMS", title: "JOBLESS · 220k to 230k", liq: "MAKER", kind: "maker", side: "YES", qty: 1, price: 35, note: "queue 0", fresh: 0 },
+      { t: t - 1500000, tail: "B81", ev: "NYC", title: "NYC HIGH · 80° to 81°", liq: "SETTLED", kind: "win", side: "WON", qty: 3, price: 100, note: "+$1.83", fresh: 0 },
+      { t: t - 2100000, tail: "B025", ev: "CPI", title: "CORE CPI · 0.2% m/m", liq: "TAKER", kind: "taker", side: "YES", qty: 1, price: 34, note: "slip 1¢", fresh: 0 },
+    ];
+  }
+
+  componentDidMount() { this.startTimer(); }
+  componentWillUnmount() { clearInterval(this._timer); }
+
+  delay() { return this.state.speed === 1 ? 1500 : this.state.speed === 16 ? 220 : 620; }
+  startTimer() {
+    clearInterval(this._timer);
+    if (!this.state.running) return;
+    this._timer = setInterval(() => this.setState((s) => this.advance(s)), this.delay());
+  }
+
+  toggleRun = () => this.setState((s) => ({ running: !s.running }), () => this.startTimer());
+  setSpeed = (n) => this.setState({ speed: n }, () => this.startTimer());
+  setFill = (m) => this.setState({ fillModel: m });
+  setMtm = (m) => this.setState({ mtm: m });
+  reset = () => {
+    clearInterval(this._timer);
+    this.setState({
+      running: true, speed: 4, tick: 142, simMs: Date.UTC(2026, 5, 20, 13, 35, 0),
+      wallet: { cash: this.startCents + 313, reserved: 0, fees: 11 },
+      positions: {}, orders: [], fills: this.seedFills(), markets: this.buildMarkets(),
+      equity: this.seedEquity(), score: this.seedScore(), nextId: 1,
+    }, () => this.startTimer());
+  };
+
+  advance(prev) {
+    const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+    const S = structuredClone(prev);
+    S.tick += 1;
+    S.simMs += 300000;
+    for (const m of S.markets) {
+      m.flash = 0;
+      const target = m.fair * 100;
+      let mid = (m.bid + m.ask) / 2;
+      mid += (target - mid) * 0.045 + (Math.random() - 0.5) * 1.2;
+      mid = clamp(mid, 2.5, 97.5);
+      let bid = Math.round(mid - m.spread / 2);
+      let ask = Math.round(mid + m.spread / 2);
+      bid = clamp(bid, 1, 98); ask = clamp(ask, bid + 1, 99);
+      if (ask > m.ask || bid > m.bid) m.flash = 1; else if (ask < m.ask || bid < m.bid) m.flash = -1;
+      m.bid = bid; m.ask = ask;
+    }
+    this.placeOrders(S);
+    this.processFills(S);
+    if (S.tick % 16 === 0) this.settleOne(S);
+    const markP = (m) => (S.mtm === "mid" ? (m.bid + m.ask) / 2 : m.bid);
+    let posVal = 0;
+    for (const t in S.positions) { const p = S.positions[t]; const m = S.markets.find((x) => x.ticker === t); if (m) posVal += markP(m) * p.count; }
+    const equity = S.wallet.cash + S.wallet.reserved + posVal;
+    S.equity.push(Math.round(equity));
+    if (S.equity.length > 96) S.equity.shift();
+    for (const f of S.fills) if (f.fresh > 0) f.fresh -= 1;
+    return S;
+  }
+
+  placeOrders(S) {
+    const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+    const open = new Set(S.orders.map((o) => o.ticker));
+    let best = null, bestEdge = 0;
+    for (const m of S.markets) {
+      if (open.has(m.ticker) || S.positions[m.ticker]) continue;
+      const edge = m.model - m.ask / 100;
+      const thr = m.feeFree ? 0.05 : 0.085;
+      if (edge < thr) continue;
+      if (edge > bestEdge) { bestEdge = edge; best = m; }
+    }
+    if (!best) return;
+    const m = best, price = m.bid;
+    const maxByStake = Math.max(1, Math.floor(500 / price));
+    const edge = m.model - price / 100;
+    let count = clamp(Math.round(edge * 8) + 1, 1, 3);
+    count = Math.min(count, maxByStake);
+    const feeC = m.feeFree ? 0 : Math.max(1, Math.ceil(7 * (price / 100) * (1 - price / 100)));
+    const cost = price * count + feeC * count;
+    if (cost > S.wallet.cash) return;
+    S.wallet.cash -= cost;
+    S.wallet.reserved += cost;
+    S.orders.push({ id: S.nextId++, ticker: m.ticker, sub: m.sub, cat: m.cat, price, count, filled: 0, queueAhead: m.depth, feeC, model: m.model });
+  }
+
+  processFills(S) {
+    const remain = [];
+    for (const o of S.orders) {
+      let v;
+      if (S.fillModel === "level0") { v = o.count; o.queueAhead = 0; }
+      else { v = Math.random() < 0.6 ? Math.floor(Math.random() * 4) : 0; if (S.fillModel === "level2") v = Math.round(v * 1.5); }
+      if (o.queueAhead > 0) { const c = Math.min(v, o.queueAhead); o.queueAhead -= c; v -= c; }
+      if (v > 0 && o.filled < o.count) {
+        const fillN = Math.min(v, o.count - o.filled);
+        o.filled += fillN;
+        const spent = o.price * fillN + o.feeC * fillN;
+        S.wallet.reserved -= spent;
+        S.wallet.fees += o.feeC * fillN;
+        const p = S.positions[o.ticker];
+        if (p) { const nc = p.count + fillN; p.avgCost = (p.avgCost * p.count + o.price * fillN) / nc; p.count = nc; }
+        else S.positions[o.ticker] = { count: fillN, avgCost: o.price, cat: o.cat, sub: o.sub };
+        const sc = S.score[this.catKey(o.cat)];
+        sc.trades += 1; sc.makerFills += 1; sc.sumEdge += (o.model - o.price / 100); sc.fees += o.feeC * fillN;
+        S.fills.unshift({ t: S.simMs, tail: this.tail(o.ticker), ev: this.evShort(o.ticker), title: this.evLong(o.ticker) + " · " + o.sub, liq: o.feeC ? "MAKER·FEE" : "MAKER", kind: "maker", side: "YES", qty: fillN, price: o.price, note: "queue 0", fresh: 3 });
+        if (S.fills.length > 18) S.fills.pop();
+      }
+      if (o.filled < o.count) remain.push(o);
+    }
+    S.orders = remain;
+  }
+
+  settleOne(S) {
+    const ts = Object.keys(S.positions);
+    if (!ts.length) return;
+    const t = ts[Math.floor(Math.random() * ts.length)];
+    const p = S.positions[t];
+    const m = S.markets.find((x) => x.ticker === t);
+    if (!m) { delete S.positions[t]; return; }
+    const outcome = Math.random() < m.fair ? 1 : 0;
+    const payout = outcome ? 100 : 0;
+    S.wallet.cash += payout * p.count;
+    const realized = (payout - p.avgCost) * p.count;
+    const sc = S.score[this.catKey(m.cat)];
+    sc.realizedNet += realized;
+    sc.brierSum += Math.pow(m.model - outcome, 2);
+    sc.brierN += 1;
+    S.fills.unshift({ t: S.simMs, tail: this.tail(t), ev: this.evShort(t), title: this.evLong(t) + " · " + p.sub, liq: "SETTLED", kind: realized >= 0 ? "win" : "loss", side: outcome ? "WON" : "LOST", qty: p.count, price: payout, note: (realized >= 0 ? "+" : "−") + "$" + (Math.abs(realized) / 100).toFixed(2), fresh: 3 });
+    if (S.fills.length > 18) S.fills.pop();
+    delete S.positions[t];
+    S.orders = S.orders.filter((o) => o.ticker !== t);
+  }
+
+  dol(c) { return "$" + (c / 100).toFixed(2); }
+  sdol(c) { return (c >= 0 ? "+" : "−") + "$" + (Math.abs(c) / 100).toFixed(2); }
+  pp(x) { return Math.round(x * 100) + "%"; }
+  seg(active) {
+    return { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 9px", fontSize: "11px", fontFamily: "'Geist Mono',monospace", letterSpacing: ".03em", border: "1px solid " + (active ? "#2e9df1" : "#2e2e33"), background: active ? "rgba(46,157,241,.15)" : "transparent", color: active ? "#9fd3f7" : "#a1a1aa", borderRadius: "6px", cursor: "pointer" };
+  }
+  miniSeg(active) {
+    return { fontFamily: "'Geist Mono',monospace", fontSize: "10px", padding: "1px 5px", borderRadius: "4px", border: "1px solid " + (active ? "#2e9df1" : "#2e2e33"), background: active ? "rgba(46,157,241,.16)" : "transparent", color: active ? "#9fd3f7" : "#71717a", cursor: "pointer", marginLeft: "2px" };
+  }
+
+  rowFor(m, S) {
+    const POS = "#3ECf8E", NEG = "#F2666B";
+    const markP = S.mtm === "mid" ? (m.bid + m.ask) / 2 : m.bid;
+    const edge = m.model - m.ask / 100;
+    const thr = m.feeFree ? 0.05 : 0.085;
+    const pos = S.positions[m.ticker];
+    const ord = S.orders.find((o) => o.ticker === m.ticker);
+    const barModel = this.clamp(m.model * 100, 0, 100);
+    const barMkt = this.clamp((m.bid + m.ask) / 2, 0, 100);
+    const lo = Math.min(barModel, barMkt), hi = Math.max(barModel, barMkt);
+    const arrow = m.flash === 1 ? " ▲" : m.flash === -1 ? " ▼" : "";
+    let sig = "—", sigColor = "#52525b", sigBg = "transparent";
+    if (pos) { sig = "OWN"; sigColor = "#7fc2f4"; sigBg = "rgba(46,157,241,.14)"; }
+    else if (ord) { sig = "RESTING"; sigColor = "#E0A33E"; sigBg = "rgba(224,163,62,.12)"; }
+    else if (edge >= thr) { sig = "EDGE"; sigColor = "#3ECf8E"; sigBg = "rgba(62,207,142,.12)"; }
+    let posStr = "—", posColor = "#52525b";
+    if (pos) { posStr = pos.count + " @ " + Math.round(pos.avgCost) + "¢"; posColor = "#c8c8cf"; }
+    else if (ord) { posStr = "rest " + (ord.count - ord.filled) + "@" + ord.price; posColor = "#9a7a3e"; }
+    return {
+      sub: m.sub, meta: this.evShort(m.ticker) + " · " + this.tail(m.ticker) + arrow,
+      modelStr: this.pp(m.model), mktStr: Math.round((m.bid + m.ask) / 2) + "¢",
+      edgeStr: (edge >= 0 ? "+" : "−") + Math.abs(edge * 100).toFixed(1), edgeColor: edge >= thr ? POS : edge <= -0.03 ? NEG : "#6b6b73",
+      bookStr: m.bid + "·" + m.ask, posStr, posColor, sig, sigColor, sigBg,
+      barModel, barMkt, gapLeft: lo, gapWidth: Math.max(hi - lo, 0), gapColor: m.model > (m.bid + m.ask) / 200 * 100 ? "#3ECf8E" : "#F2666B",
+    };
+  }
+
+  renderVals() {
+    const S = this.state;
+    const POS = "#3ECf8E", NEG = "#F2666B", NEU = "#e8e8ec";
+    const markP = (m) => (S.mtm === "mid" ? (m.bid + m.ask) / 2 : m.bid);
+    let posVal = 0, unrealW = 0, unrealM = 0, posCount = 0;
+    for (const t in S.positions) {
+      const p = S.positions[t]; const m = S.markets.find((x) => x.ticker === t); if (!m) continue;
+      const mp = markP(m); posVal += mp * p.count; posCount += 1;
+      const u = (mp - p.avgCost) * p.count;
+      if (m.cat === "weather") unrealW += u; else unrealM += u;
+    }
+    const equity = S.wallet.cash + S.wallet.reserved + posVal;
+    const unreal = unrealW + unrealM;
+    const totalPnl = equity - this.startCents;
+
+    // chart
+    const eq = S.equity;
+    const n = eq.length, W = 1000, H = 208, padT = 14, padB = 18;
+    const lo = Math.min(...eq, this.startCents), hi = Math.max(...eq, this.startCents);
+    const range = Math.max(hi - lo, 30), pad = range * 0.18;
+    const yMin = lo - pad, yMax = hi + pad;
+    const X = (i) => (n <= 1 ? 0 : (i / (n - 1)) * W);
+    const Y = (v) => padT + (1 - (v - yMin) / (yMax - yMin)) * (H - padT - padB);
+    let path = "", area = "";
+    eq.forEach((v, i) => { const x = X(i).toFixed(1), y = Y(v).toFixed(1); path += (i === 0 ? "M" : "L") + x + " " + y + " "; });
+    area = path + "L1000 " + (H - padB) + " L0 " + (H - padB) + " Z";
+    const baselineY = Y(this.startCents);
+    // drawdown
+    let peak = -Infinity, maxDD = 0;
+    for (const v of eq) { if (v > peak) peak = v; const dd = (peak - v) / peak; if (dd > maxDD) maxDD = dd; }
+
+    // scorecard
+    const w = S.score.weather, mc = S.score.macro;
+    const wNet = w.realizedNet + unrealW, mNet = mc.realizedNet + unrealM;
+    const wBrier = w.brierSum / w.brierN, mBrier = mc.brierSum / mc.brierN;
+    const wFill = w.makerFills / Math.max(1, w.makerFills + w.takerFills);
+    const mFill = mc.makerFills / Math.max(1, mc.makerFills + mc.takerFills);
+    const wEdge = w.sumEdge / Math.max(1, w.trades), mEdge = mc.sumEdge / Math.max(1, mc.trades);
+    const L = "#cfcfd4", D = "#6b6b73";
+    const col = (lead) => (lead ? "#fafafa" : "#8a8a93");
+    const scoreRows = [
+      { label: "Net P&L", hint: "realized + unrealized, net of fees", wVal: this.sdol(wNet - w.fees), mVal: this.sdol(mNet - mc.fees), wColor: wNet >= mNet ? POS : "#8a8a93", mColor: mNet > wNet ? POS : "#8a8a93" },
+      { label: "Brier score", hint: "lower = better calibrated", wVal: wBrier.toFixed(3), mVal: mBrier.toFixed(3), wColor: col(wBrier <= mBrier), mColor: col(mBrier < wBrier) },
+      { label: "Maker fill rate", hint: "share filled as maker", wVal: this.pp(wFill), mVal: this.pp(mFill), wColor: col(wFill >= mFill), mColor: col(mFill > wFill) },
+      { label: "Trades settled", hint: "calibration sample size", wVal: String(w.brierN), mVal: String(mc.brierN), wColor: col(w.brierN >= mc.brierN), mColor: col(mc.brierN > w.brierN) },
+      { label: "Avg edge captured", hint: "model − entry price", wVal: "+" + (wEdge * 100).toFixed(1) + "pp", mVal: "+" + (mEdge * 100).toFixed(1) + "pp", wColor: col(wEdge >= mEdge), mColor: col(mEdge > wEdge) },
+      { label: "Max drawdown", hint: "lower = steadier equity", wVal: this.pp(w.maxDD), mVal: this.pp(mc.maxDD), wColor: col(w.maxDD <= mc.maxDD), mColor: col(mc.maxDD < w.maxDD) },
+      { label: "Fees paid", hint: "maker-free weather wins here", wVal: this.dol(w.fees), mVal: this.dol(mc.fees), wColor: col(w.fees <= mc.fees), mColor: col(mc.fees < w.fees) },
+    ];
+    const wLeads = wNet >= mNet;
+    const leaderTag = wLeads ? "WEATHER LEADS" : "MACRO LEADS";
+    const leaderBlurb = wLeads
+      ? "Weather is better calibrated and maker-free, so its edge survives fees. Front-runner for the $50 pilot — keep the shadow window open."
+      : "Macro is ahead on net P&L this window, but CPI maker fees and a smaller calibration sample warrant more data before deciding.";
+
+    // fills
+    const fillRows = S.fills.map((f) => {
+      const d = new Date(f.t);
+      const time = String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0");
+      let liqColor = "#7fc2f4", liqBg = "rgba(46,157,241,.14)";
+      if (f.kind === "win") { liqColor = "#3ECf8E"; liqBg = "rgba(62,207,142,.13)"; }
+      else if (f.kind === "loss") { liqColor = "#F2666B"; liqBg = "rgba(242,102,107,.13)"; }
+      else if (f.kind === "taker") { liqColor = "#E0A33E"; liqBg = "rgba(224,163,62,.13)"; }
+      const noteColor = f.kind === "win" ? "#3ECf8E" : f.kind === "loss" ? "#F2666B" : f.kind === "taker" ? "#b58a3e" : "#6b6b73";
+      const detail = f.liq === "SETTLED" ? (f.side + " · " + f.qty + " contracts @ " + f.price + "¢") : (f.side + " · ×" + f.qty + " @ " + f.price + "¢");
+      return { time, liq: f.liq, liqColor, liqBg, title: f.title, detail, note: f.note, noteColor, bg: f.fresh > 0 ? "rgba(46,157,241,.06)" : "transparent" };
+    });
+
+    const dd = new Date(S.simMs);
+    const clockStr = String(dd.getUTCHours()).padStart(2, "0") + ":" + String(dd.getUTCMinutes()).padStart(2, "0");
+
+    return {
+      runLabel: S.running ? "RUNNING" : "PAUSED",
+      dotColor: S.running ? "#3ECf8E" : "#E0A33E",
+      clockStr, tickStr: String(S.tick), cashFlag: String(this.props.startingCash ?? 50),
+      runId: "26jun20-fwd",
+      toggleRun: this.toggleRun, reset: this.reset,
+      speed1: () => this.setSpeed(1), speed4: () => this.setSpeed(4), speed16: () => this.setSpeed(16),
+      s1Style: this.seg(S.speed === 1), s4Style: this.seg(S.speed === 4), s16Style: this.seg(S.speed === 16),
+      runBtnLabel: S.running ? "❚❚ PAUSE" : "▶ RESUME",
+      runBtnStyle: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 11px", fontSize: "11px", fontFamily: "'Geist Mono',monospace", letterSpacing: ".04em", border: "1px solid " + (S.running ? "#2e2e33" : "#2e9df1"), background: S.running ? "transparent" : "rgba(46,157,241,.15)", color: S.running ? "#cfcfd4" : "#9fd3f7", borderRadius: "6px", cursor: "pointer", fontWeight: 600 },
+      mtmBid: () => this.setMtm("bid"), mtmMid: () => this.setMtm("mid"),
+      bidStyle: this.miniSeg(S.mtm === "bid"), midStyle: this.miniSeg(S.mtm === "mid"),
+      fill1: () => this.setFill("level1"), fill2: () => this.setFill("level2"), fill0: () => this.setFill("level0"),
+      f1Style: this.miniSeg(S.fillModel === "level1"), f2Style: this.miniSeg(S.fillModel === "level2"), f0Style: this.miniSeg(S.fillModel === "level0"),
+      fillChip: S.fillModel === "level0" ? "L0 optimistic" : S.fillModel === "level2" ? "L2 probabilistic" : "L1 trade-through",
+      mtmLabel: S.mtm,
+
+      equityStr: this.dol(equity), pnlStr: this.sdol(totalPnl), pnlColor: totalPnl >= 0 ? POS : NEG,
+      startStr: this.dol(this.startCents), deltaStr: (totalPnl >= 0 ? "+" : "−") + (Math.abs(totalPnl / this.startCents) * 100).toFixed(2) + "%",
+      cashStr: this.dol(S.wallet.cash), reservedStr: this.dol(S.wallet.reserved),
+      unrealStr: this.sdol(Math.round(unreal)), unrealColor: unreal >= 0 ? POS : NEG,
+      realStr: this.sdol(w.realizedNet + mc.realizedNet), realColor: (w.realizedNet + mc.realizedNet) >= 0 ? POS : NEG,
+      feesStr: this.dol(S.wallet.fees), posCountStr: String(posCount), ddStr: this.pp(maxDD),
+
+      equityPath: path.trim(), equityArea: area, baselineY: baselineY.toFixed(1),
+      dotX: X(n - 1).toFixed(1), dotY: Y(eq[n - 1]).toFixed(1),
+      hiLabel: this.dol(hi), loLabel: this.dol(lo), baseLabelTop: (baselineY - 7).toFixed(0) + "px",
+
+      weatherRows: S.markets.filter((m) => m.cat === "weather").map((m) => this.rowFor(m, S)),
+      macroRows: S.markets.filter((m) => m.cat === "macro").map((m) => this.rowFor(m, S)),
+      scoreRows, leaderTag, leaderBlurb, fillRows,
+    };
+  }
+}
+</script>
+<script>
+(async () => {
+  if (!document.title || !document.title.trim()) document.title = "PredictSim";
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  @page { margin: 0.5cm; }\n  figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    print-color-adjust: exact; -webkit-print-color-adjust: exact;\n    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  // Reveal content gated on scroll or visibility before printing. Lazy <img>,
+  // IntersectionObserver fade-ins, and collapsed <details> don't render while
+  // off-screen, so a long page would print with them blank or closed. Open
+  // every <details>, force native-lazy images eager, and scroll the document
+  // through its full height to trip lazy-load + IO; then wait (bounded) for the
+  // newly-triggered images. Inert for deck-stage (slides aren't scroll-gated).
+  try {
+    for (const d of document.querySelectorAll('details')) d.open = true;
+    for (const img of document.querySelectorAll('img[loading="lazy"]'))
+      img.loading = 'eager';
+    const scroller = document.scrollingElement || document.documentElement;
+    const full = Math.max(scroller.scrollHeight, document.body.scrollHeight);
+    const step = window.innerHeight || 800;
+    for (let y = 0; y <= full; y += step) {
+      window.scrollTo(0, y);
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    window.scrollTo(0, 0);
+    await Promise.race([
+      Promise.all(
+        [...document.images].map((img) =>
+          img.complete
+            ? null
+            : new Promise((res) => {
+                img.addEventListener('load', res, { once: true });
+                img.addEventListener('error', res, { once: true });
+              })
+        )
+      ),
+      new Promise((r) => setTimeout(r, 4000)),
+    ]);
+  } catch (e) {}
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  // Re-append deck-stage's @page last so no author @page can add a margin and
+  // spill each full-bleed slide onto two sheets. Backstop for old copies.
+  if (ds) {
+    let pg = document.getElementById('deck-stage-print-page');
+    if (!pg) {
+      pg = document.createElement('style');
+      pg.textContent = '@page{size:' + (+ds.getAttribute('width') || 1920) +
+        'px ' + (+ds.getAttribute('height') || 1080) + 'px;margin:0}';
+    }
+    document.body.appendChild(pg);
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  // Relax break-inside on oversized elements. An element taller than a
+  // printable page can't honor break-inside: avoid — browsers either overflow
+  // it or push it whole to the next page, leaving a blank gap, then break it
+  // anyway at an arbitrary point. After the final layout (content revealed,
+  // animations jumped), find elements taller than a page that still compute
+  // break-inside: avoid and reset them to auto, so the browser breaks them at
+  // their children's boundaries instead (children keep their own avoid). PAGE_PX
+  // is a conservative portrait estimate at 96 CSS px/in — Letter/A4 usable
+  // height minus our 0.5in margins — so only clearly-oversized elements are
+  // touched and under-page elements still stay whole. Skipped for decks, whose
+  // slides are sized to the page.
+  try {
+    if (!document.querySelector('deck-stage')) {
+      const PAGE_PX = 1024;
+      // Our print defaults add a body padding inset only when we also zero the
+      // @page margin; computed style can't tell us (it reports screen media),
+      // so read the injected rule directly.
+      const defaults = document.querySelector('style[data-omelette-print-defaults]');
+      const pageInset = /body\s*\{[^}]*padding/.test(defaults ? defaults.textContent || '' : '');
+      const SEL = 'section,article,figure,table,pre,blockquote,[class~="card" i],[class~="page" i],[class~="sheet" i]';
+      for (const el of document.body.querySelectorAll(SEL)) {
+        if (el instanceof HTMLElement && el.offsetHeight > PAGE_PX) {
+          el.setAttribute('data-om-oversized', '');
+          // Fake-paged docs simulate sheets with over-tall break-after:page
+          // boxes; honoring the break spills half-blank pages and ends a
+          // colored box mid-sheet. Flow them, and (only when we own the page
+          // inset) drop the redundant padding/background via the rule below.
+          const cs = getComputedStyle(el);
+          if (cs.breakAfter === 'page' || cs.pageBreakAfter === 'always') {
+            el.setAttribute('data-om-fakepage', '');
+          }
+        }
+      }
+      const ost = document.createElement('style');
+      ost.textContent = '@media print{' +
+        '[data-om-oversized]{break-inside:auto !important;page-break-inside:auto !important}' +
+        '[data-om-fakepage]{break-after:auto !important;page-break-after:auto !important}' +
+        (pageInset ? '[data-om-fakepage]{padding:0 !important;background:none !important}' : '') +
+        '}';
+      document.head.appendChild(ost);
+    }
+  } catch (e) {}
+  // macOS Preview renders Skia-PDF Luminosity soft-masks as opaque grey boxes;
+  // swap the CSS that triggers them for Preview-safe forms.
+  try {
+    for (const el of document.body.querySelectorAll('*')) {
+      const cs = getComputedStyle(el);
+
+      if (cs.boxShadow !== 'none' && cs.filter === 'none') {
+        const outs = [], kept = [];
+        for (const s of cs.boxShadow.split(/,(?![^(]*[)])/)) {
+          const t = s.trim();
+          const m = t.match(/^(rgba?[(][^)]+[)]) (-?[0-9.]+px) (-?[0-9.]+px) ([0-9.]+px) -?[0-9.]+px$/);
+          if (m && parseFloat(m[4]) > 0) outs.push('drop-shadow(' + m[2] + ' ' + m[3] + ' ' + m[4] + ' ' + m[1] + ')');
+          else kept.push(t);
+        }
+        if (outs.length) {
+          el.style.setProperty('filter', outs.join(' '), 'important');
+          el.style.setProperty('box-shadow', kept.join(', ') || 'none', 'important');
+        }
+      }
+
+      const mask = cs.maskImage && cs.maskImage !== 'none' ? cs.maskImage : cs.webkitMaskImage;
+      if (mask && mask !== 'none' && cs.filter === 'none') el.style.setProperty('filter', 'opacity(1)', 'important');
+    }
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>
