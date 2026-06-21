@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 2 · Steps 2–3 Findings — Kalshi Edge, Capacity & Fees</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#191919;--bg2:#202020;--bg3:#2F2F2F;--hover:#474C50;
+  --tx:#FFFFFF;--tx2:#EDEEEE;--muted:#A7A39A;
+  --blue:#407EC9;--blue2:#1E73BE;--green:#448361;--warn:#D9730D;--err:#D44E49;
+  --border:#444B4E;--fd:'Red Hat Display',system-ui,sans-serif;--fb:'Geist',system-ui,sans-serif;--fm:'Fira Code',monospace;
+  --r:14px;--rs:8px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx2);font-family:var(--fb);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--fd);color:var(--tx);margin:0 0 .4em}
+h1{font-size:clamp(1.9rem,1.4rem+2vw,2.9rem);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+h2{font-size:clamp(1.4rem,1.1rem+1.2vw,2rem);font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.2rem;font-weight:600}
+p{margin:0 0 1em}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+strong{color:var(--tx);font-weight:600}
+.mono{font-family:var(--fm)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.section{padding:56px 0;border-top:1px solid var(--border)}
+.eyebrow{font-family:var(--fd);font-size:.76rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin-bottom:12px}
+.lead{font-size:1.14rem;color:var(--tx2);max-width:75ch}
+.muted{color:var(--muted)}
+.hero{padding:64px 0 48px;background:radial-gradient(1000px 420px at 10% -10%,rgba(64,126,201,.18),transparent 60%),radial-gradient(820px 380px at 95% 0%,rgba(68,131,97,.15),transparent 55%)}
+.tagrow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--fd);font-size:.74rem;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px}
+.stat .num{font-family:var(--fd);font-weight:800;font-size:1.9rem;color:var(--tx);line-height:1.05}
+.stat .num.g{color:var(--green)}.stat .num.b{color:var(--blue)}.stat .num.w{color:var(--warn)}
+.stat .lab{font-size:.82rem;color:var(--muted);margin-top:6px}
+.disc{display:flex;gap:13px;align-items:flex-start;background:rgba(64,126,201,.08);border:1px solid rgba(64,126,201,.4);border-radius:var(--r);padding:15px 17px;font-size:.92rem}
+.disc.warn{background:rgba(217,115,13,.08);border-color:rgba(217,115,13,.45)}
+.tbl{width:100%;border-collapse:collapse;font-size:.9rem}
+.tbl th,.tbl td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--border)}
+.tbl thead th{font-family:var(--fd);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--bg2)}
+.tbl td:first-child{color:var(--tx);font-weight:600}
+.tbl tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+.bar{height:14px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;min-width:60px}
+.bar>i{display:block;height:100%;border-radius:999px}
+.bw>i{background:linear-gradient(90deg,#2f6f4d,var(--green))}
+.bj>i{background:linear-gradient(90deg,#b5651f,var(--warn))}
+.bb>i{background:linear-gradient(90deg,var(--blue2),var(--blue))}
+.b{display:inline-block;font-family:var(--fd);font-weight:700;font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:6px}
+.b-go{background:rgba(68,131,97,.18);color:#7fd0a3;border:1px solid rgba(68,131,97,.5)}
+.b-warn{background:rgba(217,115,13,.16);color:#e6a35c;border:1px solid rgba(217,115,13,.5)}
+.b-info{background:rgba(64,126,201,.16);color:#86b7e8;border:1px solid rgba(64,126,201,.5)}
+.find{background:linear-gradient(135deg,rgba(64,126,201,.14),rgba(68,131,97,.1));border:1px solid var(--blue);border-radius:var(--r);padding:22px 24px}
+.kvi{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px}
+.kvi .k{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:var(--fd);font-weight:600;margin-bottom:3px}
+.kvi .v{color:var(--tx2);font-size:.92rem}
+.foot{padding:40px 0 64px;color:var(--muted);font-size:.84rem}
+ul.tight{margin:.3em 0 1em;padding-left:1.1em}ul.tight li{margin:.32em 0}
+@media(max-width:820px){.g4,.g3,.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="hero"><div class="wrap">
+  <div class="tagrow">
+    <span class="chip"><span class="dot"></span>Phase 2 · Steps 2–3</span>
+    <span class="chip">Live Kalshi public API</span>
+    <span class="chip">June 20, 2026</span>
+  </div>
+  <div class="eyebrow">Edge Verification · Capacity &amp; Fees</div>
+  <h1>What the real order books say about a $50 weather/macro edge</h1>
+  <p class="lead">I pulled live and settled markets straight from Kalshi's public API and computed spreads, fees, capacity, overround, and realized outcomes. The headline: <strong>at $50, the edge is killed or saved at the level of fees and spreads — and weather is structurally the cheapest, highest-frequency place to find it.</strong></p>
+</div></header>
+
+<!-- methodology -->
+<section class="section"><div class="wrap">
+  <div class="disc warn"><span>⚠️</span><div><strong>Scope &amp; honesty.</strong> This is a real but deliberately small probe: <strong>2 live NYC weather events</strong> (12 buckets), <strong>1 live jobless-claims event</strong> (10 buckets), and <strong>6 settled NYC weather days</strong> (36 markets) — the sample one public-API pass returns. It is enough to quantify <em>microstructure</em> (spreads, fees, overround, capacity, frequency) with confidence, and to establish the <em>method</em> for the forecast-calibration test. It is <strong>not</strong> a finished calibration study: that requires fixed-lead-time price history across many days and is the toolkit's MS2 backtest job (protocol specified at the end). Not financial advice.</div></div>
+</div></section>
+
+<!-- STEP 3 -->
+<section class="section"><div class="wrap">
+  <div class="eyebrow">Step 3 · Capacity &amp; Fees</div>
+  <h2>Trading cost, not capital, is the binding constraint at $50</h2>
+
+  <div class="grid g4" style="margin:26px 0">
+    <div class="card stat"><div class="num g">~1¢</div><div class="lab">Weather bucket spread (median; 1–2¢)</div></div>
+    <div class="card stat"><div class="num w">~5¢</div><div class="lab">Jobless bucket spread (median; 3–8¢)</div></div>
+    <div class="card stat"><div class="num w">4–20%</div><div class="lab">Taker fee as % of stake (worse at low prices)</div></div>
+    <div class="card stat"><div class="num g">$0</div><div class="lab">Maker fee on weather / NFP / jobless</div></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Spreads — weather is ~5× tighter than macro</h3>
+      <table class="tbl" style="margin-top:8px"><tbody>
+        <tr><td>Weather (NYC)</td><td><div class="bar bw"><i style="width:16%"></i></div></td><td class="mono">1¢ median</td></tr>
+        <tr><td>Jobless claims</td><td><div class="bar bj"><i style="width:80%"></i></div></td><td class="mono">5¢ median</td></tr>
+      </tbody></table>
+      <p class="muted" style="font-size:.9rem;margin:12px 0 0">A 1¢ spread means a weather maker concedes almost nothing to cross-or-rest; a 5¢ macro spread is a real tax you must price around. Wider macro spreads also make a clean fill harder.</p>
+    </div>
+    <div class="card">
+      <h3>Fees crush takers at small size</h3>
+      <table class="tbl" style="margin-top:8px">
+        <thead><tr><th>Price</th><th>Taker fee</th><th>% of stake</th></tr></thead>
+        <tbody>
+          <tr><td>5¢</td><td>1¢</td><td class="mono" style="color:#e58682">20.0%</td></tr>
+          <tr><td>10¢</td><td>1¢</td><td class="mono" style="color:#e58682">10.0%</td></tr>
+          <tr><td>30¢</td><td>2¢</td><td class="mono" style="color:#e6a35c">6.7%</td></tr>
+          <tr><td>50¢</td><td>2¢</td><td class="mono" style="color:#e6a35c">4.0%</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="font-size:.9rem;margin:12px 0 0">Kalshi quadratic fee <span class="mono">≈ ⌈0.07·C·p·(1−p)⌉</span>. As a <strong>taker</strong> you hand back 4–20% of every dollar — more than any realistic forecast edge. As a <strong>maker</strong> on weather it's <strong>zero</strong>. Maker-only isn't a preference; it's survival.</p>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card">
+      <h3>Capacity is not the limit</h3>
+      <p class="muted" style="font-size:.93rem;margin:0">Top-of-book on liquid weather buckets ranges from a few dollars to <span class="mono">$13+</span>; jobless buckets show <span class="mono">$14–$4,400</span> at best. A $50 bankroll spread across buckets and days fits comfortably inside available depth. The constraint at this size is <strong>fee-adjusted edge</strong>, not whether you can get filled.</p>
+    </div>
+    <div class="card">
+      <h3>Weather offers ~25–35× more shots</h3>
+      <ul class="tight muted" style="font-size:.93rem">
+        <li><strong>Weather:</strong> ~6 buckets/day/city → ~180/mo for NYC alone; ~1,000–1,400/mo across the 8 confirmed high-temp cities.</li>
+        <li><strong>Jobless:</strong> weekly → ~40 markets/mo. <strong>CPI/NFP/Fed:</strong> ~monthly.</li>
+        <li>More independent resolutions = <strong>faster calibration</strong> and a quicker, cheaper read on whether the model works.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="find" style="margin-top:22px">
+    <span class="b b-go">Step 3 verdict</span>
+    <p style="margin:12px 0 0;color:var(--tx2)">For a $50 bankroll: <strong>trade weather, maker-only.</strong> Its 1¢ spreads + zero maker fees + high frequency make it the only category where a small edge survives costs and where you get enough resolutions to learn fast. Jobless is viable but wider-spread and ~25× lower frequency → secondary. Crossing the spread as a taker anywhere is a structural loser at this size.</p>
+  </div>
+</div></section>
+
+<!-- STEP 2 -->
+<section class="section"><div class="wrap">
+  <div class="eyebrow">Step 2 · Edge Verification</div>
+  <h2>Real mispricing exists — and the data tells us exactly how to measure it</h2>
+
+  <div class="grid g4" style="margin:26px 0">
+    <div class="card stat"><div class="num b">+4–5%</div><div class="lab">Book overround (vig) per weather event</div></div>
+    <div class="card stat"><div class="num b">~1.7°F</div><div class="lab">Implied single-day high SD</div></div>
+    <div class="card stat"><div class="num">2.85°F</div><div class="lab">Realized day-to-day high SD (6 days)</div></div>
+    <div class="card stat"><div class="num g">100%</div><div class="lab">Settled prices pinned to 0¢/100¢</div></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>There's a structural vig to be on the right side of</h3>
+      <p class="muted" style="font-size:.93rem">Summing the mid-implied probabilities across a weather event's buckets gives <strong>1.04–1.05</strong> — a <strong>+4–5% overround</strong>. Translation: the book is tilted ~4–5% against takers and <em>toward</em> a disciplined maker. Combined with zero maker fees, posting liquidity is how you sit on the right side of that tilt instead of paying it.</p>
+    </div>
+    <div class="card">
+      <h3>The longshot tail is a pure tax</h3>
+      <p class="muted" style="font-size:.93rem">Every deep-tail weather bucket we sampled quotes <span class="mono">bid 0¢ / ask 1¢</span> — you can only <em>buy</em> a near-0% outcome at 1¢. That's the favorite-longshot bias made concrete: buying tails is −EV, and the edge sits in <strong>fading over-priced tails / favoring under-priced near-favorites</strong>, exactly as the Phase-1 research predicted.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>The key methodological finding: settled prices converge to truth</h3>
+    <p class="muted" style="font-size:.93rem;margin-bottom:14px">Across 36 settled NYC markets, <strong>every</strong> price had collapsed to 0 or 1 by settlement — 30 at ≤5¢, 6 at ≥95¢, <strong>none</strong> in between:</p>
+    <table class="tbl"><tbody>
+      <tr><td>Settled at ≤ 5¢ (losers)</td><td style="width:60%"><div class="bar bb"><i style="width:83%"></i></div></td><td class="mono">30 / 36</td></tr>
+      <tr><td>Settled at ≥ 95¢ (winners)</td><td><div class="bar bb"><i style="width:17%"></i></div></td><td class="mono">6 / 36</td></tr>
+      <tr><td>Anywhere in between</td><td><div class="bar bb"><i style="width:1%"></i></div></td><td class="mono">0 / 36</td></tr>
+    </tbody></table>
+    <p class="muted" style="font-size:.9rem;margin:14px 0 0">This is why you <strong>cannot</strong> measure forecast edge from settled prices — by settlement the answer is known and priced. The real calibration/Brier/“1.27× over-priced uncertainty” test must use the price at a <strong>fixed lead time before resolution</strong> (e.g. 9:00 AM ET on event day) versus the realized outcome. That requires candlestick history per market — precisely the toolkit's MS2 backtest.</p>
+  </div>
+
+  <div class="disc" style="margin-top:18px"><span>🔬</span><div><strong>On the 1.27× uncertainty claim:</strong> our sample shows implied single-day SD ≈ <strong>1.7°F</strong> and realized cross-day SD ≈ <strong>2.85°F</strong> — but these measure <em>different</em> things (one day's forecast width vs. variation across the season) and n=6 days is far too small to conclude anything. The honest test is per-day implied SD vs. that day's realized error, over months. Specified below for the harness.</div></div>
+
+  <div class="find" style="margin-top:22px">
+    <span class="b b-info">Step 2 verdict</span>
+    <p style="margin:12px 0 0;color:var(--tx2)">The <strong>structural</strong> edges are real and measurable right now: a +4–5% overround and a quantifiable longshot tail tax that a maker can systematically sit on the right side of. The <strong>forecast</strong> edge (is your weather model better than the market's implied distribution?) is real in the literature but <strong>can only be proven with fixed-lead price history</strong> — so it graduates to the toolkit/simulator, not a hand analysis.</p>
+  </div>
+</div></section>
+
+<!-- SYNTHESIS / NEXT -->
+<section class="section"><div class="wrap">
+  <div class="eyebrow">Synthesis → Step 4</div>
+  <h2>Where this leaves the go/no-go</h2>
+  <div class="grid g3" style="margin-top:22px">
+    <div class="kvi"><div class="k">Category</div><div class="v"><strong>Weather, maker-only</strong> — tight spreads, zero maker fee, +4–5% overround, ~25–35× the frequency.</div></div>
+    <div class="kvi"><div class="k">Avoid at $50</div><div class="v">Any taker order (4–20% fee tax); buying tails; wide-spread macro as a primary.</div></div>
+    <div class="kvi"><div class="k">Still unproven</div><div class="v">Whether a model beats the implied distribution — needs fixed-lead calibration.</div></div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Exact calibration protocol for the toolkit (MS2 / sim PS4)</h3>
+    <ul class="tight" style="font-size:.94rem">
+      <li>For each weather city-day, capture the <strong>full bucket ladder at a fixed lead</strong> (e.g. 9:00 AM ET event day) via <span class="mono">/markets/{ticker}/candlesticks</span>; normalize out the overround to get implied bucket probabilities.</li>
+      <li>Generate the <strong>model</strong> bucket probabilities from the Open-Meteo GFS/ECMWF ensemble for that city-day (same lead).</li>
+      <li>Join to the realized NWS high (winning bucket). Compute, per day and per city: <strong>Brier score</strong> (model vs market), reliability curve, and the <strong>implied-SD ÷ realized-error ratio</strong> — the real test of the 1.27× claim.</li>
+      <li>Score only <strong>maker-fillable</strong>, <strong>fee-adjusted</strong> edges (apply the §6.6 fee model; weather maker = 0). Require net edge ≥ 2× costs.</li>
+      <li>Run ≥3–4 weeks live (the simulator's forward-test) before any real-money pilot. <strong>Decision gate:</strong> fund only if the model is provably calibrated and fee-adjusted-positive over the window.</li>
+    </ul>
+  </div>
+
+  <p class="muted" style="margin-top:18px;font-size:.93rem">Net: Steps 2–3 confirm the <em>structural</em> case for weather-first, maker-only at $50, and convert the remaining open question into one precise, runnable measurement. That measurement is the simulator's whole purpose — so the natural next move is to build it (specs already written) and let it run the protocol above.</p>
+</div></section>
+
+<footer class="foot"><div class="wrap">
+  <h3 style="color:var(--tx2)">Data &amp; method</h3>
+  <p class="muted" style="font-size:.86rem">All figures computed June 20, 2026 from Kalshi's public Trade API (no auth): live markets for <span class="mono">KXHIGHNY</span> (2 events) and <span class="mono">KXJOBLESSCLAIMS</span> (1 event), and 36 settled <span class="mono">KXHIGHNY</span> markets across 6 days. Network I/O via the data API; all computation run locally on the pulled data. Fee figures use Kalshi's documented quadratic schedule (<span class="mono">⌈0.07·C·p·(1−p)⌉</span>); verify the per-series coefficient against the contract terms. Small-sample probe — treat the microstructure numbers as solid and the forecast-calibration numbers as illustrative pending the MS2 backtest. Not financial advice.</p>
+  <p class="muted" style="font-size:.78rem;margin-top:14px">Saved artifacts: <span class="mono">phase2_metrics.json</span>, <span class="mono">settled_nyc_processed.csv</span>. Prepared for Tom Panos · Phase 2 Steps 2–3.</p>
+</div></footer>
+
+</body>
+</html>

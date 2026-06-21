@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediction Markets — Category Opportunity Map (Phase 1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#191919; --bg2:#202020; --bg3:#2F2F2F; --hover:#474C50;
+  --tx:#FFFFFF; --tx2:#EDEEEE; --muted:#A7A39A;
+  --blue:#407EC9; --blue2:#1E73BE; --blueh:#327DA9; --lblue:#0083BB;
+  --green:#448361; --warn:#D9730D; --err:#D44E49;
+  --border:#444B4E; --form:#364954;
+  --fd:'Red Hat Display',system-ui,sans-serif;
+  --fb:'Geist',system-ui,sans-serif;
+  --fm:'Fira Code',Menlo,Consolas,monospace;
+  --r:14px; --rs:8px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx2);font-family:var(--fb);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5{font-family:var(--fd);color:var(--tx);margin:0 0 .4em}
+h1{font-size:clamp(2rem,1.4rem+2.4vw,3.1rem);font-weight:800;line-height:1.08;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,1.1rem+1.4vw,2.1rem);font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.3rem;font-weight:600}
+h4{font-size:1.06rem;font-weight:600;color:var(--tx)}
+p{margin:0 0 1em}
+a{color:var(--blue);text-decoration:none}
+a:hover{color:var(--blue);text-decoration:underline}
+strong{color:var(--tx);font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.section{padding:64px 0;border-top:1px solid var(--border)}
+.section:first-of-type{border-top:none}
+.eyebrow{font-family:var(--fd);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
+.lead{font-size:1.18rem;color:var(--tx2);max-width:74ch}
+.muted{color:var(--muted)}
+.mono{font-family:var(--fm)}
+
+/* hero */
+.hero{position:relative;overflow:hidden;padding:74px 0 60px;background:
+  radial-gradient(1100px 460px at 12% -10%,rgba(64,126,201,.20),transparent 60%),
+  radial-gradient(900px 420px at 96% 0%,rgba(68,131,97,.16),transparent 55%);}
+.tagrow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--fd);font-size:.74rem;font-weight:600;letter-spacing:.04em;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--tx2)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.hero h1{max-width:18ch}
+.hero .lead{margin-top:18px}
+.metawrap{display:flex;flex-wrap:wrap;gap:26px;margin-top:30px;color:var(--muted);font-size:.9rem}
+.metawrap b{color:var(--tx2);font-weight:600}
+
+/* sticky nav */
+.nav{position:sticky;top:0;z-index:40;background:rgba(25,25,25,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.nav .wrap{display:flex;gap:6px;overflow-x:auto;padding:11px 24px;scrollbar-width:none}
+.nav .wrap::-webkit-scrollbar{display:none}
+.nav a{font-family:var(--fd);font-size:.86rem;font-weight:600;color:var(--muted);padding:7px 13px;border-radius:999px;white-space:nowrap;border:1px solid transparent}
+.nav a:hover{color:var(--tx2);text-decoration:none;background:var(--bg2)}
+.nav a.active{color:var(--tx);background:var(--bg3);border-color:var(--border)}
+
+/* disclaimer */
+.disc{display:flex;gap:14px;align-items:flex-start;background:rgba(217,115,13,.08);border:1px solid rgba(217,115,13,.45);border-radius:var(--r);padding:16px 18px;font-size:.92rem;color:var(--tx2)}
+.disc .ic{flex:0 0 auto;font-size:1.1rem;line-height:1.4}
+
+/* cards & grids */
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.card.soft{background:linear-gradient(180deg,var(--bg2),#1c1c1c)}
+.stat{padding:20px 22px}
+.stat .num{font-family:var(--fd);font-weight:800;font-size:2rem;color:var(--tx);line-height:1.05}
+.stat .num.g{color:var(--green)} .stat .num.b{color:var(--blue)}
+.stat .lab{font-size:.82rem;color:var(--muted);margin-top:6px}
+.stat .sub{font-size:.74rem;color:var(--muted);margin-top:9px;opacity:.85}
+
+/* bottom-line box */
+.bl{background:linear-gradient(135deg,rgba(64,126,201,.16),rgba(68,131,97,.12));border:1px solid var(--blue);border-radius:var(--r);padding:26px 28px}
+.bl h3{color:#fff;margin-bottom:.3em}
+.pillrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.pill{font-family:var(--fd);font-weight:600;font-size:.84rem;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--tx)}
+.pill .rk{color:var(--green);font-weight:800;margin-right:7px}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:.92rem;overflow:hidden;border-radius:var(--r)}
+.tbl th,.tbl td{text-align:left;padding:13px 15px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl thead th{font-family:var(--fd);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg2)}
+.tbl tbody tr:nth-child(even){background:rgba(255,255,255,.018)}
+.tbl td:first-child{color:var(--tx);font-weight:600}
+.scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+.scroll .tbl{border-radius:0}
+.win{color:var(--green);font-weight:600}
+
+/* badges */
+.b{display:inline-block;font-family:var(--fd);font-weight:700;font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:6px;white-space:nowrap}
+.b-focus{background:rgba(68,131,97,.18);color:#7fd0a3;border:1px solid rgba(68,131,97,.5)}
+.b-test{background:rgba(64,126,201,.18);color:#86b7e8;border:1px solid rgba(64,126,201,.5)}
+.b-watch{background:rgba(217,115,13,.16);color:#e6a35c;border:1px solid rgba(217,115,13,.5)}
+.b-avoid{background:rgba(212,78,73,.16);color:#e58682;border:1px solid rgba(212,78,73,.5)}
+
+/* score matrix */
+.matrix{display:flex;flex-direction:column;gap:12px}
+.mrow{display:grid;grid-template-columns:172px 1fr 70px;align-items:center;gap:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 16px}
+.mrow .cat{font-family:var(--fd);font-weight:700;color:var(--tx);font-size:.98rem;display:flex;align-items:center;gap:9px}
+.mrow .rank{width:22px;height:22px;border-radius:50%;background:var(--bg3);color:var(--muted);font-family:var(--fd);font-weight:800;font-size:.78rem;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.mrow:nth-child(1) .rank,.mrow:nth-child(2) .rank{background:var(--green);color:#06210f}
+.bar{height:13px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.bar > i{display:block;height:100%;width:0;border-radius:999px;transition:width 1.1s cubic-bezier(.16,1,.3,1);background:linear-gradient(90deg,var(--blue2),var(--blue))}
+.mrow.top .bar > i{background:linear-gradient(90deg,#2f6f4d,var(--green))}
+.mscore{font-family:var(--fd);font-weight:800;color:var(--tx);text-align:right;font-size:1.02rem}
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:16px;font-size:.82rem;color:var(--muted)}
+.heat{width:100%;border-collapse:separate;border-spacing:4px;font-size:.82rem}
+.heat th{font-family:var(--fd);font-size:.68rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:4px;text-align:center;vertical-align:bottom}
+.heat th.cat{text-align:left;width:160px}
+.heat td{text-align:center;padding:9px 4px;border-radius:6px;font-family:var(--fd);font-weight:700;color:#0d0d0d}
+.heat td.cat{text-align:left;color:var(--tx);font-weight:600;font-family:var(--fb);background:var(--bg2);padding-left:12px}
+.s5{background:#4f9e74}.s4{background:#6f9a63}.s3{background:#b78a3e}.s2{background:#c2703a}.s1{background:#bb5450}
+
+/* category tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.tab{font-family:var(--fd);font-weight:600;font-size:.9rem;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;transition:all .15s}
+.tab:hover{color:var(--tx2);border-color:var(--hover)}
+.tab.active{color:#fff;background:var(--bg3);border-color:var(--blue)}
+.tab .r{font-weight:800;color:var(--muted);margin-right:6px}
+.tab.active .r{color:var(--blue)}
+.panel{display:none;animation:fade .35s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.panelhead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:6px}
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0}
+.kvi{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:13px 15px}
+.kvi .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:var(--fd);font-weight:600;margin-bottom:4px}
+.kvi .v{color:var(--tx2);font-size:.93rem}
+.verdict{display:flex;gap:12px;align-items:flex-start;border-radius:var(--rs);padding:14px 16px;margin-top:16px;font-size:.93rem}
+.verdict.focus{background:rgba(68,131,97,.1);border:1px solid rgba(68,131,97,.45)}
+.verdict.test{background:rgba(64,126,201,.1);border:1px solid rgba(64,126,201,.45)}
+.verdict.watch{background:rgba(217,115,13,.09);border:1px solid rgba(217,115,13,.4)}
+.verdict.avoid{background:rgba(212,78,73,.09);border:1px solid rgba(212,78,73,.4)}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0 4px}
+.step{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:16px 14px;position:relative}
+.step .n{font-family:var(--fm);font-size:.72rem;color:var(--blue);font-weight:500}
+.step h5{font-family:var(--fd);font-size:.98rem;color:var(--tx);margin:6px 0 6px}
+.step p{font-size:.82rem;color:var(--muted);margin:0}
+.step:not(:last-child)::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--border);font-size:1.1rem;z-index:2}
+
+/* steps / next */
+.phase{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--r);padding:22px 24px;margin-bottom:16px}
+.phase .ph{font-family:var(--fd);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);font-weight:700}
+.phase h4{margin:6px 0 4px;font-size:1.16rem}
+.phase .when{font-size:.8rem;color:var(--muted)}
+.checks{list-style:none;padding:0;margin:14px 0 0}
+.checks li{position:relative;padding:7px 0 7px 30px;border-top:1px solid rgba(255,255,255,.05);font-size:.93rem}
+.checks li::before{content:"";position:absolute;left:4px;top:13px;width:13px;height:13px;border-radius:4px;border:1.5px solid var(--blue);background:rgba(64,126,201,.12)}
+.gate{background:rgba(68,131,97,.1);border:1px dashed rgba(68,131,97,.55);border-radius:var(--rs);padding:13px 16px;margin-top:14px;font-size:.9rem}
+.gate b{color:#7fd0a3}
+
+/* footer */
+.foot{padding:48px 0 70px;color:var(--muted);font-size:.85rem}
+.srcs{columns:2;column-gap:28px;margin-top:12px}
+.srcs a{display:block;margin-bottom:8px;font-size:.82rem;break-inside:avoid}
+.foot h4{color:var(--tx2)}
+
+@media(max-width:880px){
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:1fr}
+  .g2{grid-template-columns:1fr}
+  .pipe{grid-template-columns:1fr;gap:14px}
+  .step:not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-13px;transform:translateX(50%)}
+  .mrow{grid-template-columns:120px 1fr 54px;gap:10px}
+  .kv{grid-template-columns:1fr}
+  .srcs{columns:1}
+  .heatwrap{overflow-x:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="tagrow">
+      <span class="chip"><span class="dot"></span>Phase 1 Research</span>
+      <span class="chip">Kalshi &amp; Polymarket</span>
+      <span class="chip">AI-Signal Lens</span>
+      <span class="chip">Prepared for Tom Panos · June 20, 2026</span>
+    </div>
+    <div class="eyebrow">Prediction Markets · Strategic Category Analysis</div>
+    <h1>Where to point an AI-driven edge first</h1>
+    <p class="lead">A focused map of the two leading prediction-market venues and a scored ranking of <strong>which trade categories are most "optimizable"</strong> by a model-and-signal approach — calibrated for a small, experimental bankroll where a better forecast, not size or speed, is the edge.</p>
+    <div class="metawrap">
+      <span><b>Scope:</b> Category selection only</span>
+      <span><b>Bankroll modeled:</b> &lt;$500, experimental</span>
+      <span><b>Output:</b> Ranked focus list + Phase 2 plan</span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Section navigation">
+  <div class="wrap">
+    <a href="#thesis" class="active">Thesis</a>
+    <a href="#snapshot">Market Snapshot</a>
+    <a href="#platforms">Platforms</a>
+    <a href="#framework">Scoring Framework</a>
+    <a href="#matrix">Category Ranking</a>
+    <a href="#categories">Deep Dives</a>
+    <a href="#stack">AI Signal Stack</a>
+    <a href="#risks">Reality Check</a>
+    <a href="#next">Next Steps</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- THESIS -->
+<section class="section" id="thesis">
+  <div class="wrap">
+    <div class="disc" style="margin-bottom:36px">
+      <span class="ic">⚠️</span>
+      <div><strong>Not financial advice.</strong> I'm not a financial advisor, and this is research to inform your own decisions — not a recommendation to place any specific trade. Prediction-market contracts carry real risk including total loss of capital, every documented "edge" here decays as more participants chase it, and several of the most profitable strategies on these venues are execution/latency games that a retail trader realistically cannot win. Treat a &lt;$500 bankroll as tuition.</div>
+    </div>
+
+    <div class="eyebrow">The Thesis</div>
+    <h2>The edge lives where outcomes resolve on public data — not where the crowd is loudest</h2>
+    <p class="lead" style="margin-bottom:30px">Sports is ~85–90% of Kalshi's volume, but volume is not opportunity. For an AI/model approach on a tiny bankroll, the best categories are the ones that are <strong>cleanly modelable from structured public data, demonstrably mispriced, and contested by patient forecasters rather than co-located bots.</strong> Two categories dominate on that test.</p>
+
+    <div class="bl">
+      <h3>Bottom line</h3>
+      <p style="margin-bottom:4px;color:var(--tx2)">Lead with <strong>Kalshi</strong> (it has a full trading API + demo sandbox; Polymarket's US app is iOS-only with no automation path yet). Focus the first models on two categories where forecasting skill — not speed or capital — is the differentiator:</p>
+      <div class="pillrow">
+        <span class="pill"><span class="rk">①</span>Weather — Daily Temperature</span>
+        <span class="pill"><span class="rk">②</span>Macro / Economic Data</span>
+        <span class="pill" style="opacity:.8"><span class="rk" style="color:var(--blue)">③</span>Politics (test)</span>
+      </div>
+      <p class="muted" style="margin:16px 0 0;font-size:.9rem">Keep Polymarket as a secondary venue for liquidity, broader event coverage, and — later, with automation — cross-platform arbitrage. Treat sports, short-horizon crypto, and pop-culture as <em>watch/avoid</em> for now (reasons below).</p>
+    </div>
+  </div>
+</section>
+
+<!-- SNAPSHOT -->
+<section class="section" id="snapshot">
+  <div class="wrap">
+    <div class="eyebrow">Market Snapshot · 2026</div>
+    <h2>The category has gone mainstream — and consolidated</h2>
+    <p class="lead">Regulated, US-legal prediction markets scaled fast through 2025–26. Kalshi pulled clearly ahead on volume and regulatory footing; Polymarket re-entered the US after a four-year absence.</p>
+    <div class="grid g4" style="margin-top:28px">
+      <div class="card stat"><div class="num b">~89%</div><div class="lab">Kalshi's share of the US prediction market</div><div class="sub">CoinDesk, Apr 2026</div></div>
+      <div class="card stat"><div class="num">$100B+</div><div class="lab">Kalshi lifetime notional volume</div><div class="sub">~$6.4B in a single week, Jun 2026 (+43% w/w)</div></div>
+      <div class="card stat"><div class="num">$2.76B</div><div class="lab">Polymarket monthly volume</div><div class="sub">Oct 2025; deeper liquidity on headline markets</div></div>
+      <div class="card stat"><div class="num g">$263.5M</div><div class="lab">Kalshi 2025 fee revenue</div><div class="sub">~89% of it from sports</div></div>
+    </div>
+    <p class="muted" style="margin-top:20px;font-size:.9rem">Read this two ways. The good news: liquidity and legitimacy are real now. The strategic news: the money and the smartest competition are concentrated in sports — which means the <strong>under-traded, data-resolved corners are where an individual modeler is least outgunned.</strong></p>
+  </div>
+</section>
+
+<!-- PLATFORMS -->
+<section class="section" id="platforms">
+  <div class="wrap">
+    <div class="eyebrow">Platform Comparison</div>
+    <h2>Kalshi vs. Polymarket — and why I'd start on Kalshi</h2>
+    <p class="lead">Both are now CFTC-regulated and legal for US persons. For a <em>systematic, AI-assisted</em> approach the deciding factor isn't liquidity — it's whether you can actually wire a model into the venue.</p>
+
+    <div class="scroll" style="margin-top:26px">
+      <table class="tbl">
+        <thead><tr><th>Dimension</th><th>Kalshi</th><th>Polymarket (US)</th></tr></thead>
+        <tbody>
+          <tr><td>Regulation</td><td>CFTC-regulated exchange (DCM). US-native, all 50 states.</td><td>CFTC-regulated via QCEX acquisition ($112M, 2025). Legal in 40+ states.</td></tr>
+          <tr><td>US access today</td><td class="win">Web + apps, broad availability</td><td>iOS app only — no Android/web yet (Jun 2026); full KYC. MN ban looms Aug 1 (challenged).</td></tr>
+          <tr><td>Settlement currency</td><td>USD (bank/ACH/debit)</td><td>USDC on Polygon (USD funding via ACH/debit/wire)</td></tr>
+          <tr><td>Automation / API</td><td class="win">Full REST + WebSocket + FIX, Python SDK, demo sandbox</td><td>No public US automation path yet; the app is manual</td></tr>
+          <tr><td>Fees (small orders)</td><td>Maker (limit) often <strong>free</strong>; taker peaks ~$1.75 / 100 contracts near 50¢</td><td>Most intl. markets 0%; US venue ~0.10% taker / 0% maker + maker rebates</td></tr>
+          <tr><td>Liquidity</td><td>Deep in sports; thinner elsewhere</td><td class="win">Deeper on headline/long-tail event markets</td></tr>
+          <tr><td>Best-fit categories</td><td class="win">Weather, macro/econ, politics, sports</td><td>Politics, crypto, broad culture/long-tail events</td></tr>
+          <tr><td>Data-resolved markets</td><td class="win">NWS weather, BLS/BEA/Fed macro prints</td><td>Crypto price feeds, mixed resolution sources</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g2" style="margin-top:24px">
+      <div class="card">
+        <h4 style="color:#86b7e8">Why Kalshi is the primary venue</h4>
+        <p class="muted" style="font-size:.93rem;margin:0">A model is only useful if it can read prices and post orders programmatically. Kalshi exposes a full API with a <strong>demo environment</strong> for risk-free testing, plus a Python SDK — and it owns the two most model-friendly categories (NWS-settled weather, government-data-settled macro). That combination is exactly what an AI-signal workflow needs.</p>
+      </div>
+      <div class="card">
+        <h4 style="color:#e6a35c">Why keep Polymarket in the picture</h4>
+        <p class="muted" style="font-size:.93rem;margin:0">Deeper liquidity on flagship markets, a broader long-tail of event types, and the most active AI-agent ecosystem. It's the other leg of any future <strong>cross-platform arbitrage</strong>, and a useful price-discovery reference. But until web/API access lands, it's a manual venue — a secondary tool, not where a bot lives.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FRAMEWORK -->
+<section class="section" id="framework">
+  <div class="wrap">
+    <div class="eyebrow">Scoring Framework</div>
+    <h2>Six criteria that decide whether AI can win a category</h2>
+    <p class="lead">A category is "optimizable" for our profile only if a model can be built, the edge is real, and the game isn't won purely on speed or size. Each category is scored 1–5 on these, then weighted for a small, patient, automated trader.</p>
+
+    <div class="grid g3" style="margin-top:26px">
+      <div class="card"><h4>① Modelability <span class="muted" style="font-weight:400;font-size:.8rem">· 25%</span></h4><p class="muted" style="font-size:.9rem;margin:0">Does the outcome resolve on clean, structured, public data you can forecast (NWS temps, CPI prints) — or on something noisy and idiosyncratic?</p></div>
+      <div class="card"><h4>② Documented edge <span class="muted" style="font-weight:400;font-size:.8rem">· 20%</span></h4><p class="muted" style="font-size:.9rem;margin:0">Is there observable, repeatable mispricing (e.g. weather's 1.27× over-priced uncertainty, favorite-longshot bias) you can point to?</p></div>
+      <div class="card"><h4>③ Skill &gt; speed <span class="muted" style="font-weight:400;font-size:.8rem">· 20%</span></h4><p class="muted" style="font-size:.9rem;margin:0">Does a better forecast win — or is it a latency war against co-located bots? We want categories where patience beats microseconds.</p></div>
+      <div class="card"><h4>④ Small-capital fit <span class="muted" style="font-weight:400;font-size:.8rem">· 15%</span></h4><p class="muted" style="font-size:.9rem;margin:0">Can a tiny, patient maker actually get filled without being the dumb money or getting crowded out by sharps?</p></div>
+      <div class="card"><h4>⑤ Automatability <span class="muted" style="font-weight:400;font-size:.8rem">· 10%</span></h4><p class="muted" style="font-size:.9rem;margin:0">Are the price feed and the signal data both reachable by API, so the whole loop can run as code?</p></div>
+      <div class="card"><h4>⑥ Fee-adjusted viability <span class="muted" style="font-weight:400;font-size:.8rem">· 10%</span></h4><p class="muted" style="font-size:.9rem;margin:0">Does the typical edge survive fees at small size? (On Kalshi, that usually means posting limit orders, not crossing the spread.)</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- MATRIX -->
+<section class="section" id="matrix">
+  <div class="wrap">
+    <div class="eyebrow">Category Ranking</div>
+    <h2>The opportunity map, scored</h2>
+    <p class="lead">Weighted scores across the six criteria. The top two clear the field because they're the only categories that are <em>both</em> cleanly modelable <em>and</em> not dominated by speed.</p>
+
+    <div class="matrix" style="margin-top:26px">
+      <div class="mrow top"><div class="cat"><span class="rank">1</span>Weather</div><div class="bar"><i data-w="94"></i></div><div class="mscore">94</div></div>
+      <div class="mrow top"><div class="cat"><span class="rank">2</span>Macro / Econ</div><div class="bar"><i data-w="83"></i></div><div class="mscore">83</div></div>
+      <div class="mrow"><div class="cat"><span class="rank">3</span>Politics</div><div class="bar"><i data-w="71"></i></div><div class="mscore">71</div></div>
+      <div class="mrow"><div class="cat"><span class="rank">4</span>Sports</div><div class="bar"><i data-w="57"></i></div><div class="mscore">57</div></div>
+      <div class="mrow"><div class="cat"><span class="rank">5</span>Culture / Ent.</div><div class="bar"><i data-w="55"></i></div><div class="mscore">55</div></div>
+      <div class="mrow"><div class="cat"><span class="rank">6</span>Crypto (short)</div><div class="bar"><i data-w="44"></i></div><div class="mscore">44</div></div>
+    </div>
+    <div class="legend">
+      <span><span class="b b-focus">Focus</span> &nbsp;Build models now</span>
+      <span><span class="b b-test">Test</span> &nbsp;Worth a structured trial</span>
+      <span><span class="b b-watch">Watch</span> &nbsp;Selective / opportunistic</span>
+      <span><span class="b b-avoid">Avoid</span> &nbsp;Not for this profile</span>
+    </div>
+
+    <h3 style="margin:42px 0 14px">Score detail (1–5 per criterion)</h3>
+    <div class="heatwrap">
+      <table class="heat">
+        <thead><tr>
+          <th class="cat">Category</th><th>Model-<br>ability</th><th>Documented<br>edge</th><th>Skill ><br>speed</th><th>Small-cap<br>fit</th><th>Auto-<br>matable</th><th>Fee-adj.<br>viability</th><th>Verdict</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="cat">Weather</td><td class="s5">5</td><td class="s5">5</td><td class="s4">4</td><td class="s5">5</td><td class="s5">5</td><td class="s4">4</td><td style="background:transparent"><span class="b b-focus">Focus</span></td></tr>
+          <tr><td class="cat">Macro / Econ</td><td class="s5">5</td><td class="s4">4</td><td class="s3">3</td><td class="s4">4</td><td class="s5">5</td><td class="s4">4</td><td style="background:transparent"><span class="b b-focus">Focus</span></td></tr>
+          <tr><td class="cat">Politics</td><td class="s3">3</td><td class="s4">4</td><td class="s4">4</td><td class="s4">4</td><td class="s3">3</td><td class="s3">3</td><td style="background:transparent"><span class="b b-test">Test</span></td></tr>
+          <tr><td class="cat">Sports</td><td class="s4">4</td><td class="s2">2</td><td class="s2">2</td><td class="s3">3</td><td class="s4">4</td><td class="s2">2</td><td style="background:transparent"><span class="b b-watch">Watch</span></td></tr>
+          <tr><td class="cat">Culture / Ent.</td><td class="s2">2</td><td class="s3">3</td><td class="s4">4</td><td class="s3">3</td><td class="s2">2</td><td class="s2">2</td><td style="background:transparent"><span class="b b-watch">Watch</span></td></tr>
+          <tr><td class="cat">Crypto (short)</td><td class="s2">2</td><td class="s3">3</td><td class="s1">1</td><td class="s2">2</td><td class="s4">4</td><td class="s2">2</td><td style="background:transparent"><span class="b b-avoid">Avoid</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:.84rem;margin-top:14px">Scores are a structured judgment from the cited research, not a backtest. Validating them empirically — especially the weather and macro mispricing claims — is exactly what Phase 2 is for.</p>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="section" id="categories">
+  <div class="wrap">
+    <div class="eyebrow">Category Deep Dives</div>
+    <h2>The case on each, in detail</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-t="p-weather"><span class="r">1</span>Weather</button>
+      <button class="tab" data-t="p-macro"><span class="r">2</span>Macro / Econ</button>
+      <button class="tab" data-t="p-politics"><span class="r">3</span>Politics</button>
+      <button class="tab" data-t="p-sports"><span class="r">4</span>Sports</button>
+      <button class="tab" data-t="p-culture"><span class="r">5</span>Culture</button>
+      <button class="tab" data-t="p-crypto"><span class="r">6</span>Crypto</button>
+    </div>
+
+    <!-- weather -->
+    <div class="panel active" id="p-weather">
+      <div class="panelhead"><h3>Weather — Daily Temperature (Kalshi <span class="mono" style="font-size:.85rem">KXHIGH</span>)</h3><span class="b b-focus">Focus · 94</span></div>
+      <p>The cleanest AI play on the board. Contracts ask whether a city's daily high lands in a temperature bucket, and they <strong>settle on the official National Weather Service report</strong> — a single, objective, public number. That makes the outcome forecastable with the same numerical weather models (GFS, ECMWF) and ensemble methods that meteorologists already use.</p>
+      <p>The documented inefficiency is specific and exploitable: across ~1,900 city-date observations, Kalshi's markets priced <strong>~1.27× more temperature uncertainty than actually occurred</strong> — i.e., the wings (unlikely buckets) are systematically over-priced. A calibrated model that buys the under-priced likely bucket and fades the over-priced tails has a structural reason to win, and open-source implementations (31-member GFS ensembles from Open-Meteo + Kelly sizing) already exist as reference.</p>
+      <div class="kv">
+        <div class="kvi"><div class="k">Resolves on</div><div class="v">NWS / NWS climate report (next-morning)</div></div>
+        <div class="kvi"><div class="k">Signal inputs</div><div class="v">GFS &amp; ECMWF ensembles, METAR airport obs, climatology</div></div>
+        <div class="kvi"><div class="k">Edge type</div><div class="v">Mispriced forecast uncertainty (1.27×) + model blend</div></div>
+        <div class="kvi"><div class="k">Why &lt;$500 works</div><div class="v">Thin markets — small, patient maker orders fit perfectly</div></div>
+      </div>
+      <div class="verdict focus"><span>✅</span><div><strong>Verdict — build first.</strong> Highest modelability, a concrete documented edge, fully API-automatable, and thin enough that a small bankroll is an advantage, not a handicap. The main watch-outs: the wings near 50¢ carry the heaviest fees (trade where edge is largest), and bot competition here is rising, so the calibration advantage has a shelf life.</div></div>
+    </div>
+
+    <!-- macro -->
+    <div class="panel" id="p-macro">
+      <div class="panelhead"><h3>Macro / Economic Data (Kalshi — CPI, Fed funds, jobs, GDP)</h3><span class="b b-focus">Focus · 83</span></div>
+      <p>The other category that resolves on a scheduled public number: a BLS inflation print, a BEA GDP release, an FOMC decision. A Federal Reserve working paper and NBER research found Kalshi's macro markets <strong>match or beat traditional forecasters</strong> — its CPI estimates carried ~40% lower error than consensus (and up to ~67% lower on surprise prints). That validates the markets as accurate, which cuts both ways: the edge isn't "the market is dumb," it's "can your nowcast beat the marginal trader's between releases."</p>
+      <p>The opening is the gap between scheduled data and live pricing. Public nowcasting tools (Cleveland Fed inflation nowcast, real-time CPI trackers, the FOMC calendar, fed-funds futures) let you form a sharper probability than a market that's drifting on stale information — then position ahead of the release. It's a research-and-reaction game, far less of a latency war than crypto.</p>
+      <div class="kv">
+        <div class="kvi"><div class="k">Resolves on</div><div class="v">BLS / BEA / Federal Reserve official releases</div></div>
+        <div class="kvi"><div class="k">Signal inputs</div><div class="v">Cleveland Fed nowcast, CME FedWatch, alt-data inflation trackers, econ calendar</div></div>
+        <div class="kvi"><div class="k">Edge type</div><div class="v">Superior nowcast + disciplined pre-release positioning</div></div>
+        <div class="kvi"><div class="k">Why &lt;$500 works</div><div class="v">Moderate liquidity; small directional positions fill cleanly</div></div>
+      </div>
+      <div class="verdict focus"><span>✅</span><div><strong>Verdict — build alongside weather.</strong> Slightly harder edge than weather (the market is already good), but the data is just as clean, it's fully automatable, and it's intellectually in your wheelhouse. Pair a public nowcast with a calibration model and measure whether you can beat the market's pre-release price.</div></div>
+    </div>
+
+    <!-- politics -->
+    <div class="panel" id="p-politics">
+      <div class="panelhead"><h3>Politics &amp; Elections</h3><span class="b b-test">Test · 71</span></div>
+      <p>The richest behavioral edge — and the messiest data. Studies consistently find a <strong>favorite-longshot bias</strong> and price <strong>compression toward 50%</strong> at long horizons, especially in political markets where opposing partisan bets cancel out. Translation: favorites are often under-priced and longshots over-priced, a pattern you can lean on systematically. Liquidity is excellent in-cycle (and Polymarket led price discovery in the 2024 cycle).</p>
+      <p>The catch: outcomes don't resolve on a tidy data feed, signals are partly unstructured (polls, news, sentiment), and there's real <strong>insider/asymmetric-information risk</strong> — the CFTC framework permits trading on non-public information in many cases. This is where an LLM layer earns its keep (parsing polling shifts and news), but it's a test, not a core build.</p>
+      <div class="kv">
+        <div class="kvi"><div class="k">Resolves on</div><div class="v">Official results / designated sources (event-dependent)</div></div>
+        <div class="kvi"><div class="k">Signal inputs</div><div class="v">Polling aggregators, fundamentals models, news/sentiment (LLM-assisted)</div></div>
+        <div class="kvi"><div class="k">Edge type</div><div class="v">Favorite-longshot bias + 50% compression at long horizons</div></div>
+        <div class="kvi"><div class="k">Watch-out</div><div class="v">Insider asymmetry; thin &amp; manipulable off-cycle</div></div>
+      </div>
+      <div class="verdict test"><span>🔬</span><div><strong>Verdict — structured test.</strong> Run a calibration study on resolved political markets to measure the bias yourself before committing capital. Strong as a complement to the data-resolved core, weaker as a standalone for a tiny bankroll because it's lumpy and event-gated.</div></div>
+    </div>
+
+    <!-- sports -->
+    <div class="panel" id="p-sports">
+      <div class="panelhead"><h3>Sports</h3><span class="b b-watch">Watch · 57</span></div>
+      <p>Where all the volume is, and the worst place for a newcomer's edge. Sports is ~85–90% of Kalshi volume precisely because it's contested by sharp sportsbooks and pro traders. Top books' AI models <strong>beat the closing line by 3–7%</strong>, so prediction-market prices on major events are already efficient — what models "know" is priced in. Realistic edges exist only in (a) thin sub-leagues (MLS, college) at 3–5%, or (b) fast arbitrage vs. DraftKings/FanDuel — and arbitrage is a speed-and-capital game.</p>
+      <div class="kv">
+        <div class="kvi"><div class="k">Resolves on</div><div class="v">Game results (clean) </div></div>
+        <div class="kvi"><div class="k">Edge type</div><div class="v">Thin-league inefficiency or cross-book arbitrage</div></div>
+        <div class="kvi"><div class="k">Why it's hard</div><div class="v">Efficient lines, sharp competition, speed-dependent arb</div></div>
+        <div class="kvi"><div class="k">Small-capital fit</div><div class="v">Deep liquidity, but you're the slow money vs. sharps</div></div>
+      </div>
+      <div class="verdict watch"><span>👀</span><div><strong>Verdict — watch, don't lead.</strong> Highly modelable but the edge is competed away. Revisit only with a genuinely differentiated thin-market model or an automated arb stack — neither is a starting point at &lt;$500.</div></div>
+    </div>
+
+    <!-- culture -->
+    <div class="panel" id="p-culture">
+      <div class="panelhead"><h3>Culture &amp; Entertainment (awards, box office, pop culture)</h3><span class="b b-watch">Watch · 55</span></div>
+      <p>Genuinely inefficient — thin markets, casual "dumb money," wide spreads. But inefficiency cuts both ways: low liquidity makes prices easy to manipulate, capacity is tiny, signals are idiosyncratic and hard to automate, and the <strong>insider-information risk is acute</strong> (people close to a release, a studio, or a vote can trade on it legally here). A few corners — box-office openings, awards with public precedent — are partly modelable, but most is noise.</p>
+      <div class="kv">
+        <div class="kvi"><div class="k">Resolves on</div><div class="v">Public results (box office, award shows) — varies</div></div>
+        <div class="kvi"><div class="k">Edge type</div><div class="v">Thin-market mispricing in modelable sub-niches</div></div>
+        <div class="kvi"><div class="k">Watch-out</div><div class="v">Insider asymmetry, manipulation, near-zero capacity</div></div>
+        <div class="kvi"><div class="k">Automatability</div><div class="v">Low — signals mostly unstructured</div></div>
+      </div>
+      <div class="verdict watch"><span>👀</span><div><strong>Verdict — opportunistic only.</strong> Fine for occasional, well-researched single bets in modelable sub-niches; not a systematic program. The edge is real but un-scalable and exposed to people who simply know more than you.</div></div>
+    </div>
+
+    <!-- crypto -->
+    <div class="panel" id="p-crypto">
+      <div class="panelhead"><h3>Crypto — Short-Horizon Price (15-min BTC/ETH/SOL)</h3><span class="b b-avoid">Avoid · 44</span></div>
+      <p>Looks AI-friendly, is actually a trap for retail. The eye-catching wins here — one wallet reportedly turning ~$300 into ~$400k in a month — came from <strong>execution latency, not forecasting</strong>: bots arbitraging the gap between a prediction market's order book and live Binance/Coinbase prices, reacting in milliseconds. On Polymarket, 14 of the 20 most profitable wallets are bots and AI agents are 30%+ of activity, but they win on speed and infrastructure you can't match from a laptop. Short-horizon price is close to a martingale; there's no forecasting edge to model.</p>
+      <div class="kv">
+        <div class="kvi"><div class="k">Resolves on</div><div class="v">Exchange price feeds (clean, but efficient)</div></div>
+        <div class="kvi"><div class="k">Edge type</div><div class="v">Latency arbitrage — infrastructure, not insight</div></div>
+        <div class="kvi"><div class="k">Why avoid</div><div class="v">You're the prey in a co-located-bot speed race</div></div>
+        <div class="kvi"><div class="k">Small-capital fit</div><div class="v">Poor — adverse selection against faster bots</div></div>
+      </div>
+      <div class="verdict avoid"><span>⛔</span><div><strong>Verdict — avoid as a starting point.</strong> The profits are real but they're an HFT story, not an AI-forecasting story. Nothing here rewards a better model on a &lt;$500 retail bankroll.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- AI STACK -->
+<section class="section" id="stack">
+  <div class="wrap">
+    <div class="eyebrow">AI Signal Stack</div>
+    <h2>How the "AI identifies signals → calculated recommendations" loop actually runs</h2>
+    <p class="lead">For the focus categories, the workflow is the same five-stage loop. AI does the forecasting and edge-detection; disciplined rules do the sizing and execution.</p>
+    <div class="pipe" style="margin-top:26px">
+      <div class="step"><div class="n">01</div><h5>Ingest</h5><p>Pull market prices via Kalshi API + signal data (weather ensembles / econ nowcasts) on a schedule.</p></div>
+      <div class="step"><div class="n">02</div><h5>Forecast</h5><p>Probabilistic model outputs a calibrated probability for each bucket (boosted trees for weather; nowcast blend for macro; LLM for unstructured context).</p></div>
+      <div class="step"><div class="n">03</div><h5>Find edge</h5><p>Compare your probability to the market price. Flag only gaps that clear fees by a margin.</p></div>
+      <div class="step"><div class="n">04</div><h5>Size</h5><p>Fractional-Kelly position sizing on the edge, capped hard for a small bankroll.</p></div>
+      <div class="step"><div class="n">05</div><h5>Execute &amp; monitor</h5><p>Post maker (limit) orders to dodge taker fees; log predicted vs. realized; watch for calibration drift / alpha decay.</p></div>
+    </div>
+    <div class="card soft" style="margin-top:26px">
+      <h4>The discipline that makes it work</h4>
+      <p class="muted" style="margin-bottom:0;font-size:.93rem">Three rules separate a real edge from a slow bleed: <strong>(1) be the maker</strong> — at &lt;$500, crossing the spread to take liquidity hands your edge to fees; <strong>(2) trust calibration, not vibes</strong> — track a Brier score on every market and only deploy where the model is provably calibrated; <strong>(3) assume decay</strong> — when an edge is documented publicly (as weather's is), more bots arrive, so measure your realized edge continuously and rotate when it compresses.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section class="section" id="risks">
+  <div class="wrap">
+    <div class="eyebrow">Reality Check</div>
+    <h2>What can quietly kill the edge</h2>
+    <div class="grid g2" style="margin-top:24px">
+      <div class="card"><h4 style="color:#e58682">Fees at small size</h4><p class="muted" style="font-size:.92rem;margin:0">Kalshi taker fees peak near 50¢ contracts (~$1.75/100). On a tiny bankroll, crossing the spread can erase the entire modeled edge. Maker-only discipline isn't optional.</p></div>
+      <div class="card"><h4 style="color:#e58682">Alpha decay</h4><p class="muted" style="font-size:.92rem;margin:0">Every edge cited here is public. As AI forecasting becomes common, the inefficiencies get arbitraged away — the classic decay problem. A documented edge is a starting hypothesis, not an annuity.</p></div>
+      <div class="card"><h4 style="color:#e58682">Forecast ≠ execution</h4><p class="muted" style="font-size:.92rem;margin:0">Much of the visible "AI wins" on these venues is latency arbitrage, not better prediction. Don't mistake a bot's speed advantage for a model edge you can replicate.</p></div>
+      <div class="card"><h4 style="color:#e58682">Insider &amp; thin-market risk</h4><p class="muted" style="font-size:.92rem;margin:0">The CFTC framework allows trading on non-public info in many cases, and thin markets are manipulable. Both hit politics and culture hardest — another reason to anchor on data-resolved categories.</p></div>
+      <div class="card"><h4 style="color:#e58682">Platform &amp; legal drift</h4><p class="muted" style="font-size:.92rem;margin:0">Polymarket US is iOS-only today and a Minnesota ban is set for Aug 1, 2026 (under challenge). State-level access can change; confirm your eligibility before funding.</p></div>
+      <div class="card"><h4 style="color:#e58682">Model overfit</h4><p class="muted" style="font-size:.92rem;margin:0">Backtests on prediction markets are prone to look-ahead bias and overfitting. Live paper-trading is the only honest validation — build it in before risking capital.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- NEXT STEPS -->
+<section class="section" id="next">
+  <div class="wrap">
+    <div class="eyebrow">Recommended Next Steps</div>
+    <h2>Phase 2 — pick the single best category, with evidence</h2>
+    <p class="lead">Phase 1 narrowed the field to two focus categories and a test. Phase 2 replaces judgment scores with measured, fee-adjusted, paper-traded evidence — and ends at a clear go/no-go.</p>
+
+    <div style="margin-top:28px">
+      <div class="phase">
+        <div class="ph">Step 1</div>
+        <h4>Map the exact markets &amp; settlement</h4>
+        <div class="when">~2–3 days · Kalshi API + docs</div>
+        <ul class="checks">
+          <li>Catalog the specific Kalshi series for weather (KXHIGH cities) and macro (CPI, Fed funds, payrolls, GDP) — contract specs, buckets, schedules, settlement source.</li>
+          <li>Stand up API access in the <strong>demo sandbox</strong> and confirm you can read order books and post test orders programmatically.</li>
+          <li>Resolve your platform eligibility (Kalshi state check; whether Polymarket US iOS access is open to you).</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="ph">Step 2</div>
+        <h4>Verify the edge on historical data</h4>
+        <div class="when">~1 week · data + backtest harness</div>
+        <ul class="checks">
+          <li>Pull historical prices + realized outcomes; <strong>re-test the weather "1.27× over-priced uncertainty" claim yourself</strong> across cities.</li>
+          <li>Measure the macro markets' pre-release pricing vs. a public nowcast (Cleveland Fed) to see if a beatable gap exists.</li>
+          <li>Run a calibration study (Brier scores) and quantify favorite-longshot bias on resolved political markets as the "test" category benchmark.</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="ph">Step 3</div>
+        <h4>Pressure-test capacity &amp; fees</h4>
+        <div class="when">~2–3 days</div>
+        <ul class="checks">
+          <li>For each candidate market: typical spread, depth at top of book, and whether the modeled edge <strong>survives fees as a maker</strong> at &lt;$500 size.</li>
+          <li>Estimate realistic monthly trade count and fill rates — does the category produce enough opportunities to matter?</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="ph">Step 4</div>
+        <h4>Paper-trade live, then decide</h4>
+        <div class="when">~3–4 weeks · shadow run</div>
+        <ul class="checks">
+          <li>Run the full loop live with no capital: log predicted probability, market price, and realized outcome for every market, daily.</li>
+          <li>Compute hypothetical fee-adjusted P&amp;L, hit rate, and calibration per category — head-to-head, weather vs. macro.</li>
+          <li>Pick the winner on risk-adjusted, fee-adjusted, capacity-aware expected value — then design the live execution + AI signal stack for that one category.</li>
+        </ul>
+        <div class="gate"><b>Decision gate:</b> fund the smallest real-money pilot <em>only</em> in the category whose paper-traded, fee-adjusted edge is positive and provably calibrated over the shadow period. If neither clears, iterate the model — don't deploy.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:24px;border-color:var(--blue)">
+      <h4>What I'd want from you to kick off Phase 2</h4>
+      <p class="muted" style="margin-bottom:0;font-size:.93rem">Two quick decisions: (1) Should I start the <strong>Step-1 market map + historical data pull</strong> for weather and macro now? (2) Do you want the Phase-2 backtest/paper-trade harness built as a runnable notebook you can re-use, or just the findings written up? Either way, I'd anchor on Kalshi first given the API + sandbox.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <h4>Methodology &amp; Sources</h4>
+    <p class="muted" style="font-size:.86rem">Phase 1 synthesizes public reporting, academic and quant research, and platform documentation gathered June 20, 2026. Volume and fee figures are point-in-time and vary by week; scores are structured judgments from the cited sources, to be validated empirically in Phase 2. Nothing here is financial advice.</p>
+    <div class="srcs">
+      <a href="https://www.coindesk.com/markets/2026/04/09/kalshi-now-controls-89-of-the-u-s-prediction-market-as-regulated-trading-takes-over">CoinDesk — Kalshi controls ~89% of US prediction market</a>
+      <a href="https://www.pewresearch.org/short-reads/2026/05/27/trading-volume-on-prediction-markets-has-soared-in-recent-months/">Pew Research — Prediction market volume has soared</a>
+      <a href="https://defirate.com/prediction-markets/volume/kalshi/">DeFiRate — Kalshi weekly volume &amp; category share</a>
+      <a href="https://finance.yahoo.com/news/kalshi-fee-revenue-2025-263-145801350.html">Yahoo Finance — Kalshi 2025 fee revenue ($263.5M, 89% sports)</a>
+      <a href="https://www.prnewswire.com/news-releases/polymarket-acquires-cftc-licensed-exchange-and-clearinghouse-qcex-for-112-million-302509626.html">PR Newswire — Polymarket acquires QCEX ($112M)</a>
+      <a href="https://cryptonews.com/cryptocurrency/is-polymarket-legal/">CryptoNews — Is Polymarket legal in the US? (June 2026)</a>
+      <a href="https://startpolymarket.com/countries/united-states/">Polymarket US access — iOS open, no waitlist (June 2026)</a>
+      <a href="https://www.sportsbookreview.com/best-sportsbooks/kalshi-vs-polymarket/">Sportsbook Review — Kalshi vs Polymarket fees &amp; liquidity</a>
+      <a href="https://quantpedia.com/systematic-edges-in-prediction-markets/">QuantPedia — Systematic edges in prediction markets</a>
+      <a href="https://blog.pi2.network/prediction-markets-the-top-7-hidden-inefficiencies-creating-edge/">Pi Squared — Top 7 hidden inefficiencies creating edge</a>
+      <a href="https://www.federalreserve.gov/econres/feds/files/2026010pap.pdf">Federal Reserve — Kalshi and the Rise of Macro Markets</a>
+      <a href="https://www.nber.org/system/files/working_papers/w34702/w34702.pdf">NBER — Kalshi and the Rise of Macro Markets (w34702)</a>
+      <a href="https://news.kalshi.com/p/april-cpi-2026-inflation-peak-forecast-kalshi">Kalshi — CPI markets vs consensus (40–67% lower error)</a>
+      <a href="https://github.com/Oalkhadra/prediction-market-trading">GitHub — Kalshi temperature strategy (1.27× uncertainty mispricing)</a>
+      <a href="https://github.com/suislanchez/polymarket-kalshi-weather-bot">GitHub — Weather bot (GFS ensembles + Kelly sizing)</a>
+      <a href="https://docs.kalshi.com/welcome">Kalshi — API documentation (REST/WebSocket/FIX, demo env)</a>
+      <a href="https://medium.com/mountain-movers/can-ai-actually-beat-prediction-markets-real-wallet-data-from-polymarket-reveals-the-truth-077949eed10d">Medium — Can AI beat prediction markets? (Polymarket wallet data)</a>
+      <a href="https://arxiv.org/pdf/2602.19520">arXiv — Domain-specific calibration dynamics in prediction markets</a>
+      <a href="https://www.sports-ai.dev/blog/prediction-markets-vs-bookmakers-ai-betting-2026">Sports-AI — Prediction markets vs bookmakers, AI edge 2026</a>
+    </div>
+    <p class="muted" style="font-size:.78rem;margin-top:22px">Prepared for Tom Panos · Phase 1 Category Research · June 20, 2026 · For research and educational purposes only.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // animate score bars when matrix enters view
+  var bars = document.querySelectorAll('.bar > i');
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){ e.target.style.width = e.target.getAttribute('data-w') + '%'; io.unobserve(e.target); }
+    });
+  }, {threshold:.4});
+  bars.forEach(function(b){ io.observe(b); });
+
+  // category tabs
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+      t.classList.add('active');
+      var el = document.getElementById(t.getAttribute('data-t'));
+      if(el){ el.classList.add('active'); }
+    });
+  });
+
+  // active nav highlight
+  var navlinks = Array.prototype.slice.call(document.querySelectorAll('.nav a'));
+  var secs = navlinks.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var navio = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        var id = '#' + e.target.id;
+        navlinks.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === id); });
+      }
+    });
+  }, {rootMargin:'-45% 0px -50% 0px'});
+  secs.forEach(function(s){ if(s) navio.observe(s); });
+})();
+</script>
+</body>
+</html>
